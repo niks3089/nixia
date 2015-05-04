@@ -1,0 +1,27 @@
+.TH NIXIA 1 "March 2015" ESnet "User Manuals"
+.SH NAME
+nixia \- perform network throughput tests for various protocols
+.SH SYNOPSIS
+.B nixia -f json_config_file [
+.I options
+.B ]
+
+.SH DESCRIPTION
+nixia is a tool for performing network throughput measurements.  It can test
+either TCP or UDP throughput. It is testing framework to add test various
+protocols 
+
+.SH "GENERAL OPTIONS"
+.TP
+.BR -F ", " -f " \fIjson file \fR"
+read from the file and write to the network, instead
+of using random data;
+server-side: read from the network and write to the file, instead
+of throwing the data away
+
+.SH AUTHORS
+Nikhil
+
+.SH "SEE ALSO"
+libnixia,
+config json example

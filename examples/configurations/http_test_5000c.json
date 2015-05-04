@@ -1,0 +1,21 @@
+{
+    "main": {
+        "name": "output_5000c", 
+        "protocols": ["http"],
+        "redis_server": "127.0.0.1", 
+        "redis_port": 6379,
+        "redis_channel": "test"
+    },
+
+    "http": {
+        "url": "127.0.0.1", 
+        "url_path": "", 
+        "http_version": "",
+        "total_connections": 5000, 
+        "concurrency": "", 
+        "connections_per_second": "",
+        "total_requests": "", 
+        "requests_per_second": "",  
+        "divide_requests_equally": "" 
+    }
+}
