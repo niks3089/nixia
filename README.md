@@ -12,7 +12,7 @@ sudo make install
 
 # To run test
 Runs Valgrind and Regression suite. 
-make test
+    make test
 *TBD*: Unit test suite
 
 # Run
