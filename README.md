@@ -7,16 +7,19 @@ Currently, it supports HTTP.
 Cmake >= 2.8
 
 # Build
+
      make;
      sudo make install
 
 # To run test
 Runs Valgrind and Regression suite.  
+
          make test
 *TBD*: Unit test suite
 
 # Run
 Nixia requires a json file as input.
+
          nixia -f config.json
   
 # Input config
