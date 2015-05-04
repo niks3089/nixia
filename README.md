@@ -22,6 +22,7 @@ Nixia requires a json file as input.
 # Input config
 
 An example of a input config json
+
      {
         "main": {
             "name": "output_10000c1000cu100000r",
