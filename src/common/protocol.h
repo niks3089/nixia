@@ -39,8 +39,6 @@ typedef enum {
 } protocols;
 
 int protocol_table_init(char *protocol_list, char *json_data);
-void protocol_load_next_protocol();
-
 void protocol_start_test();
 void protocol_stop_test();
 void protocol_shutdown();

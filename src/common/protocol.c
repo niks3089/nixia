@@ -15,6 +15,11 @@
 *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+/*
+ * Description: Conatins APIs for main and applications to communicate with
+ * each other. Allows new applications to register here
+ */
+
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -35,9 +40,6 @@
 #include "csperf_process.h"
 #include "csperf_config.h"
 
-/* TODO: Move this into a structure */
-static uint8_t   next_proto;
-
 /* 
  * Protocol registeration table.
  * New protocols must register here.
@@ -51,8 +53,7 @@ static uint8_t   next_proto;
  * protocol_display_output:   Callback to display stats to GUI 
  * protocol_stop_test:        Callback to stop the tests and traffic
  * protocol_shutdown:         Callback to clean up
- *
- * */
+ */
 static struct protocol_table_t {
      const char            *protocol_name;
      uint8_t               protocol_set;
@@ -105,11 +106,11 @@ protocol_table_init(char *protocol_list, char *json_config)
             }
         }
     }
-
-    next_proto = 0;
     return 0;
 }
 
+/* Called by the main activity thread every second. It calls
+ * callbacks of other protocols to display stats */ 
 void
 protocol_display_output()
 {
@@ -124,13 +125,6 @@ protocol_display_output()
     }
 }
 
-/* We use the function to call the next protocol's
- * gui init function. */
-void
-protocol_load_next_protocol()
-{
-}
-
 /* Inform main gui that this test is completed.
  * This will result in call to protocol_handle_test_completion() */
 void
@@ -142,12 +136,12 @@ protocol_announce_test_is_completed(int protocol)
     }
 }
 
+/* Protocol is done with its test. */
 static void 
 protocol_handle_test_completion(evutil_socket_t fd, short events, void *user_data)
 {
     int i;
-    /* Protocol is done with it's test. */
-    /* Inform main abou this and if all are done. 
+    /* Inform main about this and if all are done. 
      * Do whatever is necessary */
     struct protocol_table_t *protocol_info = 
         (struct protocol_table_t *)user_data;
@@ -155,7 +149,6 @@ protocol_handle_test_completion(evutil_socket_t fd, short events, void *user_dat
     assert(protocol_info);
 
     if (protocol_info->protocol_set) {
-        zlog_debug(log_get_cat(), "got notification..possibly from http");
         assert(protocol_info->protocol_test_completed_event);
         event_del(protocol_info->protocol_test_completed_event);
         protocol_info->protocol_test_completed_event = NULL;
@@ -183,9 +176,7 @@ protocol_setup_test_completion_event(int protocol)
             event_new(main_process_get_output_process()->evbase, -1, EV_READ|EV_WRITE,
                 protocol_handle_test_completion, &protocol_table[protocol]);
             event_add(protocol_table[protocol].protocol_test_completed_event, NULL);
-    } else {
-        //common_gui_exit_with_error("Failed to start the test");
-    }
+    } 
 }
 
 void
@@ -241,7 +232,6 @@ protocol_shutdown()
             if (protocol_table[i].protocol_shutdown) {
                 protocol_table[i].protocol_shutdown();
             } else {
-                //common_gui_exit_with_error("Failed to start the test"); 
                 zlog_error(log_get_cat(), "Oops! No start test handler for protocol: %s",
                         protocol_table[i].protocol_name);
             }
