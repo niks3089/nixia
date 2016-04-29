@@ -10,8 +10,8 @@ optimized:
 install:
 	cd build; make install
 
-.PHONY:check
-check:
+.PHONY:test
+test:
 	make test  -C build/
 
 .PHONY:release
