@@ -85,7 +85,7 @@ ExternalProject_Add(zlog
         URL ${PROJECT_SOURCE_DIR}/packages/zlog.tar.gz
         PREFIX ${CMAKE_BINARY_DIR}/external/zlog
         CONFIGURE_COMMAND ""
-	PATCH_COMMAND patch -p1 < ${PROJECT_SOURCE_DIR}/patches/zlog_error.patch
+        PATCH_COMMAND patch -p1 < ${PROJECT_SOURCE_DIR}/patches/zlog_error.patch
         UPDATE_COMMAND ""
         BUILD_COMMAND make -C <SOURCE_DIR> 
         INSTALL_COMMAND make -C <SOURCE_DIR> install PREFIX=<INSTALL_DIR> 
@@ -118,6 +118,7 @@ ExternalProject_Add(ncurses
         URL ${PROJECT_SOURCE_DIR}/packages/ncurses.tar.gz
         PREFIX ${CMAKE_BINARY_DIR}/external/ncurses
         CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> 
+        PATCH_COMMAND patch -p1 < ${PROJECT_SOURCE_DIR}/patches/ncurses.patch
         UPDATE_COMMAND ""
 )
 ExternalProject_Get_Property(ncurses install_dir)

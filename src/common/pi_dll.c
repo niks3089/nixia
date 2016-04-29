@@ -20,7 +20,6 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <sys/types.h>
-#include <linux/types.h>
 
 #include "log.h"
 #include "common.h"
