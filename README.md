@@ -44,3 +44,5 @@ An example of a input config json
      }
 
 You can find more examples under examples/configurations directory
+
+After the test is completed, the logs are present in home directory under nixia_info.log
