@@ -7,7 +7,8 @@ add_executable(nixia ${nixia_sources})
 target_link_libraries(nixia 
         log common http csperf common
         libevent rt m pthread
-        libevent libzlog libevent_pthreads libevhtp libhiredis libncurses)
+        libevent libzlog libevent_pthreads libevhtp libhiredis libncurses
+        libssh libftp)
 
 # Copy configuration files  
 install(FILES ${LOG_CONFIG} DESTINATION ${CONFIG_DIR}

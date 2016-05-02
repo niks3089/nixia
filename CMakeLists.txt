@@ -26,17 +26,17 @@ include_directories(
     "${PROJECT_SOURCE_DIR}/src/csperf"
     "${PROJECT_SOURCE_DIR}/src/main"
     "${PROJECT_BINARY_DIR}")
-    
+
 set(PATCHES_DIR ${PROJECT_SOURCE_DIR}/patches)
 
 include(ExternalProject)
 
-#URL https://github.com/downloads/libevent/libevent/libevent-2.0.21-stable.tar.gz 
+#URL https://github.com/downloads/libevent/libevent/libevent-2.0.21-stable.tar.gz
 # Build libevent
 ExternalProject_Add(libevent2
         URL ${PROJECT_SOURCE_DIR}/packages/libevent-2.0.21-stable.tar.gz
         PREFIX ${CMAKE_BINARY_DIR}/external/libevent2
-        CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> 
+        CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR>
         UPDATE_COMMAND ""
 )
 ExternalProject_Get_Property(libevent2 install_dir)
@@ -50,9 +50,8 @@ add_library(libevent_pthreads STATIC IMPORTED)
 set_property(TARGET libevent_pthreads PROPERTY IMPORTED_LOCATION
         ${install_dir}/lib/libevent_pthreads.a)
 
-# Find event_pthreads 
+# Find event_pthreads
 set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} ${install_dir}/lib)
-#find_library(libevent_pthreads libevent_pthreads PATHS ${install_dir}/lib)
 
 # Build libevhtp
 ExternalProject_Add(evhtp
@@ -69,9 +68,9 @@ ExternalProject_Add(evhtp
         -DLIBEVENT_CORE_LIBRARY:FILEPATH=${CMAKE_BINARY_DIR}/external/libevent2/lib
         -DLIBEVENT_PTHREADS_LIBRARY:FILEPATH=${CMAKE_BINARY_DIR}/external/libevent2/lib
         -DLIBEVENT_INCLUDE_DIR:PATH=${CMAKE_BINARY_DIR}/external/libevent2/include
-        -DEVHTP_DISABLE_SSL:STRING=ON <SOURCE_DIR> && 
+        -DEVHTP_DISABLE_SSL:STRING=ON <SOURCE_DIR> &&
         make -C <SOURCE_DIR>/../evhtp-build
-        INSTALL_COMMAND make install 
+        INSTALL_COMMAND make install
 )
 ExternalProject_Get_Property(evhtp install_dir)
 add_library(libevhtp STATIC IMPORTED)
@@ -87,8 +86,8 @@ ExternalProject_Add(zlog
         CONFIGURE_COMMAND ""
         PATCH_COMMAND patch -p1 < ${PROJECT_SOURCE_DIR}/patches/zlog_error.patch
         UPDATE_COMMAND ""
-        BUILD_COMMAND make -C <SOURCE_DIR> 
-        INSTALL_COMMAND make -C <SOURCE_DIR> install PREFIX=<INSTALL_DIR> 
+        BUILD_COMMAND make -C <SOURCE_DIR>
+        INSTALL_COMMAND make -C <SOURCE_DIR> install PREFIX=<INSTALL_DIR>
 )
 ExternalProject_Get_Property(zlog install_dir)
 add_library(libzlog STATIC IMPORTED)
@@ -103,8 +102,8 @@ ExternalProject_Add(hiredis
         PREFIX ${CMAKE_BINARY_DIR}/external/hiredis
         CONFIGURE_COMMAND ""
         UPDATE_COMMAND ""
-        BUILD_COMMAND make -C <SOURCE_DIR> 
-        INSTALL_COMMAND make -C <SOURCE_DIR> install PREFIX=<INSTALL_DIR> 
+        BUILD_COMMAND make -C <SOURCE_DIR>
+        INSTALL_COMMAND make -C <SOURCE_DIR> install PREFIX=<INSTALL_DIR>
 )
 ExternalProject_Get_Property(hiredis install_dir)
 add_library(libhiredis STATIC IMPORTED)
@@ -113,11 +112,11 @@ set_property(TARGET libhiredis PROPERTY IMPORTED_LOCATION
 add_dependencies(libhiredis hiredis)
 include_directories(${install_dir}/include/hiredis)
 
-# Build ncurses 
+# Build ncurses
 ExternalProject_Add(ncurses
         URL ${PROJECT_SOURCE_DIR}/packages/ncurses.tar.gz
         PREFIX ${CMAKE_BINARY_DIR}/external/ncurses
-        CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> 
+        CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR>
         PATCH_COMMAND patch -p1 < ${PROJECT_SOURCE_DIR}/patches/ncurses.patch
         UPDATE_COMMAND ""
 )
@@ -127,6 +126,45 @@ set_property(TARGET libncurses PROPERTY IMPORTED_LOCATION
         ${install_dir}/lib/libncurses.a)
 add_dependencies(libncurses ncurses)
 include_directories(${install_dir}/include)
+
+# Build libssh 0.7.3
+ExternalProject_Add(libssh2
+        URL ${PROJECT_SOURCE_DIR}/packages/libssh.tar.gz
+        PREFIX ${CMAKE_BINARY_DIR}/external/libssh2
+        CONFIGURE_COMMAND ""
+        UPDATE_COMMAND ""
+        BUILD_COMMAND mkdir -p <SOURCE_DIR>/build && cd <SOURCE_DIR>/build &&
+            cmake -DWITH_STATIC_LIB=ON -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR> -DCMAKE_BUILD_TYPE=Debug .. && make
+        INSTALL_COMMAND cd <SOURCE_DIR>/build && make install PREFIX=<INSTALL_DIR>
+)
+
+ExternalProject_Get_Property(libssh2 install_dir)
+add_library(libssh STATIC IMPORTED)
+set_property(TARGET libssh PROPERTY IMPORTED_LOCATION
+        ${install_dir}/lib/libssh.a)
+add_dependencies(libssh libssh2)
+include_directories(${install_dir}/include)
+
+# Build ftplib-4.0-1
+ExternalProject_Add(ftplib
+        URL ${PROJECT_SOURCE_DIR}/packages/ftplib-4.0-1.tar.gz
+        PREFIX ${CMAKE_BINARY_DIR}/external/ftplib
+        CONFIGURE_COMMAND ""
+        PATCH_COMMAND patch -p1 < ${PROJECT_SOURCE_DIR}/patches/ftplib.patch
+        UPDATE_COMMAND ""
+        BUILD_COMMAND cd <SOURCE_DIR>/src && make
+        INSTALL_COMMAND cd <SOURCE_DIR>/src && DESTDIR=<INSTALL_DIR> make install
+)
+
+ExternalProject_Get_Property(ftplib install_dir)
+add_library(libftp STATIC IMPORTED)
+set_property(TARGET libftp PROPERTY IMPORTED_LOCATION
+        ${install_dir}/lib/libftp.a)
+add_dependencies(libftp ftplib)
+include_directories(${install_dir}/include)
+
+# Important: Any new libraries must be linked with the executable in
+# CMakeLists.txt under src/main folder!
 
 # Add sub-directories
     add_subdirectory(src/config/log)
@@ -153,6 +191,5 @@ foreach(file ${files})
     get_filename_component(test_name ${file} NAME)
     add_test(${test_name} nixia -f ${file})
     add_test(memcheck_${test_name} ${MEMORYCHECK_COMMAND}
-        ${MEMORYCHECK_COMMAND_OPTIONS} nixia -f ${file}) 
+        ${MEMORYCHECK_COMMAND_OPTIONS} nixia -f ${file})
 endforeach()
-

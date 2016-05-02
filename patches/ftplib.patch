@@ -1,0 +1,23 @@
+diff -ruN ftplib-4.0-1_original/src/Makefile ftplib-4.0-1/src/Makefile
+--- ftplib-4.0-1_original/src/Makefile	2013-06-07 13:30:00.000000000 +0530
++++ ftplib-4.0-1/src/Makefile	2016-05-02 23:15:06.539543709 +0530
+@@ -29,13 +29,15 @@
+ 	rm -f libftp.so.*
+ 
+ install : all
+-	install qftp /usr/local/bin
+-	install -m 644 libftp.so.$(SOVERSION) /usr/local/lib
+-	install -m 644 ftplib.h /usr/local/include
+-	(cd /usr/local/lib && \
++	mkdir -p $(DESTDIR)/bin  $(DESTDIR)/lib  $(DESTDIR)/include && \
++	install qftp $(DESTDIR)/bin
++	install -m 644 libftp.a $(DESTDIR)/lib
++	install -m 644 libftp.so.$(SOVERSION) $(DESTDIR)/lib
++	install -m 644 ftplib.h $(DESTDIR)/include
++	(cd $(DESTDIR)/lib && \
+ 	 ln -sf libftp.so.$(SOVERSION) libftp.so.$(SONAME) && \
+ 	 ln -sf libftp.so.$(SONAME) libftp.so)
+-	-(cd /usr/local/bin && \
++	-(cd $(DESTDIR)/bin && \
+ 	  for f in ftpdir ftpget ftplist ftprm ftpsend; \
+ 	  do ln -s qftp $$f; done)
