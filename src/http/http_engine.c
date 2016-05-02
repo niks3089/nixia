@@ -1,5 +1,5 @@
 /*
-*    Copyright (C) 2015 Nikhil AP 
+*    Copyright (C) 2015 Nikhil AP
 *
 *    This program is free software: you can redistribute it and/or modify
 *    it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <sys/stat.h>
-    
+
 #include <string.h>
 #include <signal.h>
 #include <event2/thread.h>
@@ -56,11 +56,11 @@ http_engine_init_worker_config(int workers, char *directory)
     /* Change some values and divide the work */
     config->output_directory = directory;
     config->total_connections = (global_config->total_connections) / workers;
-    config->concurrency = (global_config->concurrency) / workers; 
-    config->connections_per_second = (global_config->connections_per_second) 
+    config->concurrency = (global_config->concurrency) / workers;
+    config->connections_per_second = (global_config->connections_per_second)
         / workers;
     config->total_requests = (global_config->total_requests) / workers;
-    config->requests_per_second = (global_config->requests_per_second) 
+    config->requests_per_second = (global_config->requests_per_second)
         / workers;
     config->requests_per_connections = (global_config->requests_per_connections)
         / workers;
@@ -197,7 +197,7 @@ http_engine_copy_connection_pool(http_connection_pool_t *pool, uint32_t size, pt
     for (i = 0; i < g_http_engine->total_workers; i++) {
         if (g_http_engine->workers[i].worker == id) {
             /* TODO: Free this memory */
-            g_http_engine->workers[i].connection_pool = 
+            g_http_engine->workers[i].connection_pool =
                     (http_connection_pool_t *) malloc(size);
             memcpy(g_http_engine->workers[i].connection_pool, pool,
                     size);
@@ -219,7 +219,7 @@ http_engine_wait_for_completion()
     }
 
     pthread_mutex_lock(&g_http_engine->lock);
-    /* TODO: It would be faster to stop activity thread using 
+    /* TODO: It would be faster to stop activity thread using
      * another user event */
     g_http_engine->workers_running = 0;
     pthread_mutex_unlock(&g_http_engine->lock);
@@ -270,9 +270,9 @@ http_engine_stop()
 
     if (g_http_engine->workers_running) {
         for (i = 0; i < g_http_engine->total_workers; i++) {
-            if(g_http_engine->workers[i].worker && 
+            if(g_http_engine->workers[i].worker &&
                     g_http_engine->workers[i].user_event) {
-                event_active(g_http_engine->workers[i].user_event, 
+                event_active(g_http_engine->workers[i].user_event,
                         EV_READ|EV_WRITE, 1);
             }
         }
@@ -313,7 +313,7 @@ http_engine_cleanup()
 
     if (g_http_engine->test_summary_file) {
         fclose(g_http_engine->test_summary_file);
-    } 
+    }
 
     free(g_http_engine);
     g_http_engine = NULL;
@@ -432,10 +432,10 @@ http_engine_setup_worker_directories()
     sprintf(worker_id_str, "%d", ++worker_id);
 
     /* Setup directory name */
-    strncpy(dir_name, global_config->output_directory, 
+    strncpy(dir_name, global_config->output_directory,
             strlen(global_config->output_directory));
     strcat(dir_name, "/worker_");
-    strncat(dir_name, worker_id_str, strlen(worker_id_str)); 
+    strncat(dir_name, worker_id_str, strlen(worker_id_str));
 
     if (stat(dir_name, &st) == -1) {
         zlog_info(log_get_cat(), "Creating directory: %s", dir_name);
@@ -456,10 +456,10 @@ http_engine_start(int workers)
     http_config_t *global_config = http_config_get();
     char *directory = NULL;
 
-    /* Check if we are engine is already set up. If it is, 
+    /* Check if we are engine is already set up. If it is,
      * restart the test */
 
-    if (!g_http_engine) { 
+    if (!g_http_engine) {
         g_http_engine = (http_engine_t *) calloc (1, sizeof(http_engine_t));
 
         if (!g_http_engine) {
@@ -484,7 +484,7 @@ http_engine_start(int workers)
 
     /* Start the workers */
     for (i = 0; i < workers; i++) {
-        directory = http_engine_setup_worker_directories(); 
+        directory = http_engine_setup_worker_directories();
 
         if (!directory) {
             /* TODO: How do we stop the already running worker? */
@@ -512,10 +512,10 @@ http_engine_start(int workers)
         }
     }
 
-    /* Set up an activity thread that monitors the workers and 
+    /* Set up an activity thread that monitors the workers and
      * writes output from them to gtk */
     error = pthread_create(&(g_http_engine->activity_thread), NULL,
-                http_engine_activity_thread, NULL); 
+                http_engine_activity_thread, NULL);
 
     if (error) {
         /* TODO: Stop the threads */

@@ -1,5 +1,5 @@
 /*
-*    Copyright (C) 2015 Nikhil AP 
+*    Copyright (C) 2015 Nikhil AP
 *
 *    This program is free software: you can redistribute it and/or modify
 *    it under the terms of the GNU General Public License as published by
@@ -39,15 +39,15 @@ http_connections_loaded_max_connections(struct http_worker_base_t *base)
 int
 http_connection_should_send_next_request(struct http_worker_base_t *base)
 {
-    if (base->stats.total_requests_sent >= 
+    if (base->stats.total_requests_sent >=
             base->config->total_requests) {
         zlog_info(log_get_cat_http(), "We have already sent "
                 "max requests. Sent: %u, Max: %u",
                 base->stats.total_requests_sent, base->config->total_requests);
         return 0;
     }
-    if (base->config->requests_per_second && 
-        base->stats.requests_sent_in_a_second >= 
+    if (base->config->requests_per_second &&
+        base->stats.requests_sent_in_a_second >=
             base->config->requests_per_second) {
         return 0;
     }
@@ -95,14 +95,14 @@ http_connection_should_run_next_connection(struct http_worker_base_t *base)
 void
 http_connection_send_request(http_connection_t *conn)
 {
-    if (conn && conn->ev_conn && conn->ev_req) {  
+    if (conn && conn->ev_conn && conn->ev_req) {
         http_stats_increment_requests_sent(conn);
         http_stats_start_time(&conn->stats.request_transfer_time);
-        evhtp_make_request(conn->ev_conn, conn->ev_req, htp_method_GET, 
+        evhtp_make_request(conn->ev_conn, conn->ev_req, htp_method_GET,
                 http_config_get()->url_path);
         zlog_info(log_get_cat_http(), "Conn(%u): Sending request. Total sent:%u"
-                "  Connection sent: %u request path: %s", 
-                conn->conn_id, conn->base->stats.total_requests_sent, 
+                "  Connection sent: %u request path: %s",
+                conn->conn_id, conn->base->stats.total_requests_sent,
                 conn->stats.total_requests_sent, http_config_get()->url_path);
     } else {
         assert(0);
@@ -116,12 +116,12 @@ http_connection_re_run(struct http_worker_base_t *base)
 {
     pi_dll_t *list, *dll;
     http_connection_t *conn = NULL;
-    
+
     list = &base->connection_pool->active_list;
 
     /* Check if there are any active connections */
     for(dll = list->dll_next; dll != list && dll;
-            dll = dll->dll_next) { 
+            dll = dll->dll_next) {
 
         if (!(http_connection_should_send_next_request(base))) {
             break;
@@ -132,7 +132,7 @@ http_connection_re_run(struct http_worker_base_t *base)
         http_connection_send_request(conn);
     }
     /* Run next connection if there are no active connections to run */
-    if (!conn && 
+    if (!conn &&
         base->stats.total_requests_sent >= base->config->total_requests) {
         http_connection_run_next_connection(base);
         return;
@@ -141,24 +141,24 @@ http_connection_re_run(struct http_worker_base_t *base)
 
 /* Free connection pool */
 void
-http_connection_pool_cleanup(struct http_worker_base_t *base, 
+http_connection_pool_cleanup(struct http_worker_base_t *base,
         http_connection_pool_t *pool)
 {
-    /* TODO:  Conn FSM cleanup to De-queue active links and 
+    /* TODO:  Conn FSM cleanup to De-queue active links and
      * close TCP connections */
     free(pool);
     pool = NULL;
 }
 
 /* Called when a HTTP resp is received. */
-void 
+void
 http_connection_check_completed_transfer(evhtp_request_t *req, void *arg)
 {
     http_connection_t *conn = (http_connection_t *)arg;
     struct http_worker_base_t *base = conn->base;
 
     /* Update connection stats */
-    if (req) { 
+    if (req) {
         conn->status = evhtp_request_status(req);
     }
     assert(conn->state == HTTP_CONN_STATE_RUNNING);
@@ -170,9 +170,9 @@ http_connection_check_completed_transfer(evhtp_request_t *req, void *arg)
     zlog_info(log_get_cat_http(),"Conn(%u): Request completed. Response status: %u "
             "total req compl: %u conn req completd: %u Total req sent:%u, "
             "Total connectons running: %u, Connections completed: %u",
-            conn->conn_id, conn->status, base->stats.total_responses_received, 
+            conn->conn_id, conn->status, base->stats.total_responses_received,
             conn->stats.total_responses_received, base->stats.total_requests_sent,
-            conn->base->connection_pool->total_connections_running, 
+            conn->base->connection_pool->total_connections_running,
             base->stats.total_completed_connections);
 
     if (!http_worker_is_test_completed(base)) {
@@ -193,7 +193,7 @@ http_connection_check_completed_transfer(evhtp_request_t *req, void *arg)
 /* Setup our connection object */
 void
 http_connection_setup(http_connection_t *conn, uint32_t id,
-        struct http_worker_base_t *base) 
+        struct http_worker_base_t *base)
 {
     /* Setup connection */
     conn->conn_id = id;
@@ -210,11 +210,11 @@ http_connection_init_pool(void *data)
     int i;
     http_connection_pool_t *pool;
     struct http_worker_base_t *base = (struct http_worker_base_t *)data;
-    http_worker_test_config_t *config = base->config; 
+    http_worker_test_config_t *config = base->config;
     uint16_t total_connections = config->total_connections;
 
-    pool = (http_connection_pool_t *) calloc (1, sizeof(http_connection_pool_t) + 
-            (sizeof(http_connection_t) * total_connections)); 
+    pool = (http_connection_pool_t *) calloc (1, sizeof(http_connection_pool_t) +
+            (sizeof(http_connection_t) * total_connections));
 
     if (!pool) {
         return NULL;
@@ -258,7 +258,7 @@ http_connection_run_connections(struct http_worker_base_t *base, uint32_t count)
     uint32_t i;
 
     zlog_info(log_get_cat_http(), "Loading %u connections. "
-            "next con to run:%u", count, 
+            "next con to run:%u", count,
             base->connection_pool->next_connection_to_run);
 
     for (i = 0; i < count; i++) {

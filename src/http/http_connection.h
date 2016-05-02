@@ -66,6 +66,7 @@ typedef struct http_connection_s {
     uint32_t                     conn_id; 
     uint8_t                      is_https:1;
     uint8_t                      done:1;
+    uint8_t                      initialised:1;
     uint8_t                      reserved:6;
     int                          error;
     char                         *error_msg;                        

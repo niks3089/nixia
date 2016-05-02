@@ -1,5 +1,5 @@
 /*
-*    Copyright (C) 2015 Nikhil AP 
+*    Copyright (C) 2015 Nikhil AP
 *
 *    This program is free software: you can redistribute it and/or modify
 *    it under the terms of the GNU General Public License as published by
@@ -57,9 +57,9 @@ http_config_complete_init()
             g_http_config->total_connections = g_http_config->concurrency;
         }
 
-        if (g_http_config->connections_per_second != 
+        if (g_http_config->connections_per_second !=
                 HTTP_DEFAULT_CONNECTIONS_PER_SECOND) {
-            g_http_config->total_connections = 
+            g_http_config->total_connections =
                 g_http_config->connections_per_second;
         }
     }
@@ -84,7 +84,7 @@ http_config_cleanup()
         return;
     }
 
-    if (g_http_config->output_directory) { 
+    if (g_http_config->output_directory) {
         free(g_http_config->output_directory);
     }
 
@@ -115,8 +115,8 @@ http_config_init(cJSON *root)
         return -1;
     }
 
-    /* IF the config is already setup, don't allocate a new one */ 
-    if (!g_http_config) { 
+    /* IF the config is already setup, don't allocate a new one */
+    if (!g_http_config) {
         g_http_config = (http_config_t *) calloc (1, sizeof(http_config_t));
 
         if (!g_http_config) {
@@ -137,27 +137,27 @@ http_config_init(cJSON *root)
             &g_http_config->http_version, HTTP_DEFAULT_HTTP_VERSION);
 
     /* Get integer types */
-    json_parser_get_element_double(root, "http", "total_connections", 
+    json_parser_get_element_double(root, "http", "total_connections",
             &new_val, HTTP_DEFAULT_TOTAL_CONNECTIONS);
     g_http_config->total_connections = new_val;
 
-    json_parser_get_element_double(root, "http", "concurrency", 
+    json_parser_get_element_double(root, "http", "concurrency",
             &new_val, HTTP_DEFAULT_CONCURRENCY);
     g_http_config->concurrency = new_val;
 
-    json_parser_get_element_double(root, "http", "connections_per_second", 
+    json_parser_get_element_double(root, "http", "connections_per_second",
             &new_val, HTTP_DEFAULT_CONNECTIONS_PER_SECOND);
     g_http_config->connections_per_second = new_val;
 
-    json_parser_get_element_double(root, "http", "total_requests", 
+    json_parser_get_element_double(root, "http", "total_requests",
             &new_val, HTTP_DEFAULT_TOTAL_REQUESTS);
     g_http_config->total_requests = new_val;
 
-    json_parser_get_element_double(root, "http", "requests_per_second", 
+    json_parser_get_element_double(root, "http", "requests_per_second",
             &new_val, HTTP_DEFAULT_REQUESTS_PER_SECOND);
     g_http_config->requests_per_second = new_val;
 
-    json_parser_get_element_double(root, "http", "divide_requests_equally", 
+    json_parser_get_element_double(root, "http", "divide_requests_equally",
             &new_val, 0);
     g_http_config->divide_requests_equally = new_val;
 
