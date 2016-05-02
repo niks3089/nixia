@@ -127,14 +127,38 @@ set_property(TARGET libncurses PROPERTY IMPORTED_LOCATION
 add_dependencies(libncurses ncurses)
 include_directories(${install_dir}/include)
 
+# Build openssl 1.0.2g
+ExternalProject_Add(openssl
+        URL ${PROJECT_SOURCE_DIR}/packages/openssl-1.0.2g.tar.gz
+        PREFIX ${CMAKE_BINARY_DIR}/external/openssl
+        CONFIGURE_COMMAND cd <SOURCE_DIR> && ./config --prefix=<INSTALL_DIR>
+        UPDATE_COMMAND ""
+        BUILD_COMMAND  make -C <SOURCE_DIR> 
+        INSTALL_COMMAND make -C <SOURCE_DIR> install
+)
+
+ExternalProject_Get_Property(openssl install_dir)
+add_library(libcrypto STATIC IMPORTED)
+set_property(TARGET libcrypto PROPERTY IMPORTED_LOCATION
+        ${install_dir}/lib/libcrypto.a)
+add_dependencies(libcrypto openssl)
+
+add_library(libssl STATIC IMPORTED)
+set_property(TARGET libssl PROPERTY IMPORTED_LOCATION
+        ${install_dir}/lib/libssl.a)
+add_dependencies(libssl openssl)
+
+include_directories(${install_dir}/include)
+
 # Build libssh 0.7.3
 ExternalProject_Add(libssh2
+        DEPENDS openssl
         URL ${PROJECT_SOURCE_DIR}/packages/libssh.tar.gz
         PREFIX ${CMAKE_BINARY_DIR}/external/libssh2
         CONFIGURE_COMMAND ""
         UPDATE_COMMAND ""
         BUILD_COMMAND mkdir -p <SOURCE_DIR>/build && cd <SOURCE_DIR>/build &&
-            cmake -DWITH_STATIC_LIB=ON -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR> -DCMAKE_BUILD_TYPE=Debug .. && make
+            cmake -DWITH_STATIC_LIB=ON -DWITH_GSSAPI=OFF -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR> -DCMAKE_BUILD_TYPE=Debug .. && make
         INSTALL_COMMAND cd <SOURCE_DIR>/build && make install PREFIX=<INSTALL_DIR>
 )
 
