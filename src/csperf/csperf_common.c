@@ -1,51 +1,51 @@
 /*
-*    Copyright (C) 2015 Nikhil AP 
+*Copyright(C)2015NikhilAP
 *
-*    This program is free software: you can redistribute it and/or modify
-*    it under the terms of the GNU General Public License as published by
-*    the Free Software Foundation, either version 3 of the License, or
-*    (at your option) any later version.
+*Thisprogramisfreesoftware:youcanredistributeitand/ormodify
+*itunderthetermsoftheGNUGeneralPublicLicenseaspublishedby
+*theFreeSoftwareFoundation,eitherversion3oftheLicense,or
+*(atyouroption)anylaterversion.
 *
-*    This program is distributed in the hope that it will be useful,
-*    but WITHOUT ANY WARRANTY; without even the implied warranty of
-*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*    GNU General Public License for more details.
+*Thisprogramisdistributedinthehopethatitwillbeuseful,
+*butWITHOUTANYWARRANTY;withouteventheimpliedwarrantyof
+*MERCHANTABILITYorFITNESSFORAPARTICULARPURPOSE.Seethe
+*GNUGeneralPublicLicenseformoredetails.
 *
-*    You should have received a copy of the GNU General Public License
-*    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*YoushouldhavereceivedacopyoftheGNUGeneralPublicLicense
+*alongwiththisprogram.Ifnot,see<http://www.gnu.org/licenses/>.
 */
 
-#include <inttypes.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include<inttypes.h>
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
 
-#define DIM(x) (sizeof(x)/sizeof(*(x)))
+#defineDIM(x)(sizeof(x)/sizeof(*(x)))
 
-static const char     *sizes[]   = { "TB", "GB", "MB", "KB", "B" };
-static const uint64_t  exbibytes = 1024ULL * 1024ULL * 1024ULL;
+staticconstchar*sizes[]={"TB","GB","MB","KB","B"};
+staticconstuint64_texbibytes=1024ULL*1024ULL*1024ULL;
 
 void
-csperf_common_calculate_size(char *result, uint64_t size)
-{   
-    uint64_t  multiplier = exbibytes;
-    int i;
+csperf_common_calculate_size(char*result,uint64_tsize)
+{
+uint64_tmultiplier=exbibytes;
+inti;
 
-    if (!size) {
-        strcpy(result, "0 B");
-        return;
-    }
+if(!size){
+strcpy(result,"0B");
+return;
+}
 
-    for (i = 0; i < DIM(sizes); i++, multiplier /= 1024)
-    {   
-        if (size < multiplier)
-            continue;
-        if (size % multiplier == 0)
-            sprintf(result, "%" PRIu64 " %s", size / multiplier, sizes[i]);
-        else
-            sprintf(result, "%.3f %s", (float) size / multiplier, sizes[i]);
-        return;
-    }
-    strcpy(result, "0 B");
-    return;
+for(i=0;i<DIM(sizes);i++,multiplier/=1024)
+{
+if(size<multiplier)
+continue;
+if(size%multiplier==0)
+sprintf(result,"%"PRIu64"%s",size/multiplier,sizes[i]);
+else
+sprintf(result,"%.3f%s",(float)size/multiplier,sizes[i]);
+return;
+}
+strcpy(result,"0B");
+return;
 }

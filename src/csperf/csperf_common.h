@@ -1,21 +1,21 @@
 /*
-*    Copyright (C) 2015 Nikhil AP 
+*Copyright(C)2015NikhilAP
 *
-*    This program is free software: you can redistribute it and/or modify
-*    it under the terms of the GNU General Public License as published by
-*    the Free Software Foundation, either version 3 of the License, or
-*    (at your option) any later version.
+*Thisprogramisfreesoftware:youcanredistributeitand/ormodify
+*itunderthetermsoftheGNUGeneralPublicLicenseaspublishedby
+*theFreeSoftwareFoundation,eitherversion3oftheLicense,or
+*(atyouroption)anylaterversion.
 *
-*    This program is distributed in the hope that it will be useful,
-*    but WITHOUT ANY WARRANTY; without even the implied warranty of
-*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*    GNU General Public License for more details.
+*Thisprogramisdistributedinthehopethatitwillbeuseful,
+*butWITHOUTANYWARRANTY;withouteventheimpliedwarrantyof
+*MERCHANTABILITYorFITNESSFORAPARTICULARPURPOSE.Seethe
+*GNUGeneralPublicLicenseformoredetails.
 *
-*    You should have received a copy of the GNU General Public License
-*    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*YoushouldhavereceivedacopyoftheGNUGeneralPublicLicense
+*alongwiththisprogram.Ifnot,see<http://www.gnu.org/licenses/>.
 */
 
-#ifndef __CS_PERF_COMMON_H
-#define __CS_PERF_COMMON_H
-void csperf_common_calculate_size(char *result, uint64_t size);
-#endif /* __CS_PERF_COMMON_H */
+#ifndef__CS_PERF_COMMON_H
+#define__CS_PERF_COMMON_H
+voidcsperf_common_calculate_size(char*result,uint64_tsize);
+#endif/*__CS_PERF_COMMON_H*/

@@ -1,48 +1,48 @@
 /*
-*    Copyright (C) 2015 Nikhil AP 
+*Copyright(C)2015NikhilAP
 *
-*    This program is free software: you can redistribute it and/or modify
-*    it under the terms of the GNU General Public License as published by
-*    the Free Software Foundation, either version 3 of the License, or
-*    (at your option) any later version.
+*Thisprogramisfreesoftware:youcanredistributeitand/ormodify
+*itunderthetermsoftheGNUGeneralPublicLicenseaspublishedby
+*theFreeSoftwareFoundation,eitherversion3oftheLicense,or
+*(atyouroption)anylaterversion.
 *
-*    This program is distributed in the hope that it will be useful,
-*    but WITHOUT ANY WARRANTY; without even the implied warranty of
-*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*    GNU General Public License for more details.
+*Thisprogramisdistributedinthehopethatitwillbeuseful,
+*butWITHOUTANYWARRANTY;withouteventheimpliedwarrantyof
+*MERCHANTABILITYorFITNESSFORAPARTICULARPURPOSE.Seethe
+*GNUGeneralPublicLicenseformoredetails.
 *
-*    You should have received a copy of the GNU General Public License
-*    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*YoushouldhavereceivedacopyoftheGNUGeneralPublicLicense
+*alongwiththisprogram.Ifnot,see<http://www.gnu.org/licenses/>.
 */
 
-#ifndef __MAIN_PROCESS_H
-#define __MAIN_PROCESS_H
+#ifndef__MAIN_PROCESS_H
+#define__MAIN_PROCESS_H
 
-#include "main_config.h"
-#include "hiredis.h"
+#include"main_config.h"
+#include"hiredis.h"
 
-typedef struct main_process_output_s {
-    pthread_t             maint_thread;
-    struct event_base     *evbase;
-    struct event          *output_timer_event;
-    redisContext          *redis_ctx;
-} main_process_output_t;
+typedefstructmain_process_output_s{
+pthread_tmaint_thread;
+structevent_base*evbase;
+structevent*output_timer_event;
+redisContext*redis_ctx;
+}main_process_output_t;
 
-void main_process_user_input();
-void main_process_start_test();
-int main_process_start_output();
-void main_process_shutdown();
-void main_process_sigint_handler(int signum);
-main_process_output_t *main_process_get_output_process();
-void main_process_tests_completed();
-void main_process_setup_protocol_directory(const char* protocol, 
-        char **directory);
-void main_process_stop_test();
-int main_process_init(int mode, char *json_data);
-void main_process_wait_for_completion();
-main_config_user_input_t 
-    *main_process_parse_command_line(int argc, char** argv);
-void main_process_config_user_input_cleanup(
-        main_config_user_input_t *user_input);
+voidmain_process_user_input();
+voidmain_process_start_test();
+intmain_process_start_output();
+voidmain_process_shutdown();
+voidmain_process_sigint_handler(intsignum);
+main_process_output_t*main_process_get_output_process();
+voidmain_process_tests_completed();
+voidmain_process_setup_protocol_directory(constchar*protocol,
+char**directory);
+voidmain_process_stop_test();
+intmain_process_init(intmode,char*json_data);
+voidmain_process_wait_for_completion();
+main_config_user_input_t
+*main_process_parse_command_line(intargc,char**argv);
+voidmain_process_config_user_input_cleanup(
+main_config_user_input_t*user_input);
 
-#endif /* __MAIN_PROCESS_H */
+#endif/*__MAIN_PROCESS_H*/

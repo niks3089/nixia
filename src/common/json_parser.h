@@ -1,30 +1,30 @@
 /*
-*    Copyright (C) 2015 Nikhil AP 
+*Copyright(C)2015NikhilAP
 *
-*    This program is free software: you can redistribute it and/or modify
-*    it under the terms of the GNU General Public License as published by
-*    the Free Software Foundation, either version 3 of the License, or
-*    (at your option) any later version.
+*Thisprogramisfreesoftware:youcanredistributeitand/ormodify
+*itunderthetermsoftheGNUGeneralPublicLicenseaspublishedby
+*theFreeSoftwareFoundation,eitherversion3oftheLicense,or
+*(atyouroption)anylaterversion.
 *
-*    This program is distributed in the hope that it will be useful,
-*    but WITHOUT ANY WARRANTY; without even the implied warranty of
-*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*    GNU General Public License for more details.
+*Thisprogramisdistributedinthehopethatitwillbeuseful,
+*butWITHOUTANYWARRANTY;withouteventheimpliedwarrantyof
+*MERCHANTABILITYorFITNESSFORAPARTICULARPURPOSE.Seethe
+*GNUGeneralPublicLicenseformoredetails.
 *
-*    You should have received a copy of the GNU General Public License
-*    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*YoushouldhavereceivedacopyoftheGNUGeneralPublicLicense
+*alongwiththisprogram.Ifnot,see<http://www.gnu.org/licenses/>.
 */
 
-#ifndef __JSON_PARSER_H
-#define __JSON_PARSER_H
+#ifndef__JSON_PARSER_H
+#define__JSON_PARSER_H
 
-#include "cJSON.h"
+#include"cJSON.h"
 
-char* json_parser_parse_file(char *file);
-void json_parser_get_element_double(cJSON *root, char *table_name, char *element, double *val, 
-        double val_default); 
-void json_parser_get_element_str(cJSON *root, char *table_name, char *element, char **val, 
-        char *val_default);
-void json_parser_get_array_str(cJSON *root, char *table_name,
-        char *array_name, char **val);
-#endif /* __JSON_PARSER_H */
+char*json_parser_parse_file(char*file);
+voidjson_parser_get_element_double(cJSON*root,char*table_name,char*element,double*val,
+doubleval_default);
+voidjson_parser_get_element_str(cJSON*root,char*table_name,char*element,char**val,
+char*val_default);
+voidjson_parser_get_array_str(cJSON*root,char*table_name,
+char*array_name,char**val);
+#endif/*__JSON_PARSER_H*/

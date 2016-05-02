@@ -1,80 +1,80 @@
 /*
-*    Copyright (C) 2015 Nikhil AP 
+*Copyright(C)2015NikhilAP
 *
-*    This program is free software: you can redistribute it and/or modify
-*    it under the terms of the GNU General Public License as published by
-*    the Free Software Foundation, either version 3 of the License, or
-*    (at your option) any later version.
+*Thisprogramisfreesoftware:youcanredistributeitand/ormodify
+*itunderthetermsoftheGNUGeneralPublicLicenseaspublishedby
+*theFreeSoftwareFoundation,eitherversion3oftheLicense,or
+*(atyouroption)anylaterversion.
 *
-*    This program is distributed in the hope that it will be useful,
-*    but WITHOUT ANY WARRANTY; without even the implied warranty of
-*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*    GNU General Public License for more details.
+*Thisprogramisdistributedinthehopethatitwillbeuseful,
+*butWITHOUTANYWARRANTY;withouteventheimpliedwarrantyof
+*MERCHANTABILITYorFITNESSFORAPARTICULARPURPOSE.Seethe
+*GNUGeneralPublicLicenseformoredetails.
 *
-*    You should have received a copy of the GNU General Public License
-*    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*YoushouldhavereceivedacopyoftheGNUGeneralPublicLicense
+*alongwiththisprogram.Ifnot,see<http://www.gnu.org/licenses/>.
 */
 
-#ifndef __CS_PERF_NETWORK_H
-#define __CS_PERF_NETWORK_H
+#ifndef__CS_PERF_NETWORK_H
+#define__CS_PERF_NETWORK_H
 
-#include <stdint.h>
-#include <event2/buffer.h>
+#include<stdint.h>
+#include<event2/buffer.h>
 
-#define CS_MAGIC 0xaa
-#define CS_HEADER_PDU_LEN (sizeof(asn_message_pdu)) 
-#define CS_COMMAND_PDU_LEN (sizeof(asn_command_pdu)) 
+#defineCS_MAGIC0xaa
+#defineCS_HEADER_PDU_LEN(sizeof(asn_message_pdu))
+#defineCS_COMMAND_PDU_LEN(sizeof(asn_command_pdu))
 
-/* Flags */
-#define CS_FLAG_DUPLEX      0x01
-#define CS_FLAG_HALF_DUPLEX 0x02
+/*Flags*/
+#defineCS_FLAG_DUPLEX0x01
+#defineCS_FLAG_HALF_DUPLEX0x02
 
-/* Each packet that gets sent out can be either
- * a data or a command */
-enum asn_message_type {
-    CS_MSG_COMMAND = 1,
-    CS_MSG_DATA
+/*Eachpacketthatgetssentoutcanbeeither
+*adataoracommand*/
+enumasn_message_type{
+CS_MSG_COMMAND=1,
+CS_MSG_DATA
 };
 
-/* Mark: Sent from client->server. 
-         Asks the server to respond back after specifed amount
-         of bytes.
+/*Mark:Sentfromclient->server.
+Askstheservertorespondbackafterspecifedamount
+ofbytes.
 
-   Mark response: Sent from server->client.
-        After the server has done processing data
+Markresponse:Sentfromserver->client.
+Aftertheserverhasdoneprocessingdata
 */
-enum asn_command_type {
-    CS_CMD_MARK,
-    CS_CMD_MARK_RESP,
+enumasn_command_type{
+CS_CMD_MARK,
+CS_CMD_MARK_RESP,
 
-    /* Place new commands above this */
-    CS_CMD_MAX,
+/*Placenewcommandsabovethis*/
+CS_CMD_MAX,
 };
 
-typedef struct 
+typedefstruct
 {
-    /* Header */
-    uint32_t total_len;
-    uint8_t  magic;
-    uint8_t  message_type; 
-    uint8_t  reserved[2];
+/*Header*/
+uint32_ttotal_len;
+uint8_tmagic;
+uint8_tmessage_type;
+uint8_treserved[2];
 
-    /* Payload */
-    uint8_t  message[];
-} asn_message_pdu;
+/*Payload*/
+uint8_tmessage[];
+}asn_message_pdu;
 
-typedef struct
+typedefstruct
 {
-    uint64_t       echo_timestamp;
-    uint64_t       echoreply_timestamp;
-    uint32_t       blocks_to_receive;
-    uint8_t        command_type;
-    uint8_t        flags;
-    uint8_t        resvrd[2];
-} asn_command_pdu;
+uint64_techo_timestamp;
+uint64_techoreply_timestamp;
+uint32_tblocks_to_receive;
+uint8_tcommand_type;
+uint8_tflags;
+uint8_tresvrd[2];
+}asn_command_pdu;
 
-int csperf_network_get_pdu_type(struct evbuffer *buf, uint32_t *len);
-asn_message_pdu* csperf_network_create_pdu(uint8_t message_type,
-         uint8_t message_info, uint32_t message_len);
-uint64_t csperf_network_get_time(char *buf);
-#endif /* __CS_PERF_NETWORK_H */
+intcsperf_network_get_pdu_type(structevbuffer*buf,uint32_t*len);
+asn_message_pdu*csperf_network_create_pdu(uint8_tmessage_type,
+uint8_tmessage_info,uint32_tmessage_len);
+uint64_tcsperf_network_get_time(char*buf);
+#endif/*__CS_PERF_NETWORK_H*/
