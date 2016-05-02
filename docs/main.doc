@@ -1,0 +1,21 @@
+-----------------------------------------------------------------------------------------------------------------------------------
+                                                    MAIN
+-----------------------------------------------------------------------------------------------------------------------------------
+
+Sample main config
+
+"main": {
+    "name": "output results",
+    "protocols": ["http"],
+    "redis_server": "127.0.0.1",
+    "redis_port": 6379,
+    "redis_channel": "test"
+}
+
+name: Name of the test. Output results will be saved under "name" directory
+protocols: List of protocols which needs to be run under this test
+total runtime:
+redis_server: This is used when the tests needs be run with nixia console. Specfies the server ip where the django/redis is running.
+redis_port: Port on which redis server is listening.
+redis_channel: Channel specified by the user. Typically, user running a browser selects a channel on which he will subscribe to for test 
+    results. The test results will be published on this redis channel 

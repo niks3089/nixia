@@ -1,0 +1,28 @@
+-----------------------------------------------------------------------------------------------------------------------------------
+                                                    HTTP
+-----------------------------------------------------------------------------------------------------------------------------------
+
+Sample of http config
+
+"http": {
+    "url": "127.0.0.1",
+    "url_path": "test.gz",
+    "http_version": "",
+    "total_connections": 10000,
+    "concurrency": 1000,
+    "connections_per_second": "",
+    "total_requests": 100000,
+    "requests_per_second": "",
+    "divide_requests_equally": ""
+}
+
+url: Specifies the server url/ip address to test
+url_path: Path under the server where the file which needs to be downloaded.
+http_version: Http version which needs to be used. Default in 1.1
+total_connections: Total number of TCP connections which needs to be set up with the server. Default is 1.
+concurrency: Total number of concurrent TCP connections that need to be established with the server. Default is 0.  
+connections_per_second: Number of connections that needs to be set up every second. Default is 0.
+total_requests: Total number of GET requests that needs to be sent.
+requests_per_second: Total number of GET requests that needs to be sent every second. 
+divide_requests_equally: Divide total requests with total number of connections. Example: total_requests: 100, total_connections: 10. 
+    Every connection will send 10 requests. 
