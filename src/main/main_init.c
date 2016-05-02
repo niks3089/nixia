@@ -53,6 +53,12 @@ main_init(int argc, char** argv)
         exit(1) ;
     }
 
+    if (access(user_input->config_file, F_OK )  <  0) {
+        zlog_error(log_get_cat(), "Config file doesn't exist.");
+        fprintf(stderr, "Config file doesn't exist.\n");
+        exit(1);
+    }
+
     zlog_info(log_get_cat(), "Parsing file :%s", user_input->config_file);
     json_data = json_parser_parse_file(user_input->config_file); 
 
