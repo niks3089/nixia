@@ -1,28 +1,28 @@
 /*
-*Copyright(C)2015NikhilAP
+*    Copyright (C) 2015 Nikhil AP 
 *
-*Thisprogramisfreesoftware:youcanredistributeitand/ormodify
-*itunderthetermsoftheGNUGeneralPublicLicenseaspublishedby
-*theFreeSoftwareFoundation,eitherversion3oftheLicense,or
-*(atyouroption)anylaterversion.
+*    This program is free software: you can redistribute it and/or modify
+*    it under the terms of the GNU General Public License as published by
+*    the Free Software Foundation, either version 3 of the License, or
+*    (at your option) any later version.
 *
-*Thisprogramisdistributedinthehopethatitwillbeuseful,
-*butWITHOUTANYWARRANTY;withouteventheimpliedwarrantyof
-*MERCHANTABILITYorFITNESSFORAPARTICULARPURPOSE.Seethe
-*GNUGeneralPublicLicenseformoredetails.
+*    This program is distributed in the hope that it will be useful,
+*    but WITHOUT ANY WARRANTY; without even the implied warranty of
+*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*    GNU General Public License for more details.
 *
-*YoushouldhavereceivedacopyoftheGNUGeneralPublicLicense
-*alongwiththisprogram.Ifnot,see<http://www.gnu.org/licenses/>.
+*    You should have received a copy of the GNU General Public License
+*    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef__HTTP_PROCESS_H
-#define__HTTP_PROCESS_H
+#ifndef __HTTP_PROCESS_H
+#define __HTTP_PROCESS_H
 
-voidhttp_process_user_input();
-voidhttp_process_start(char*directory);
-voidhttp_process_stop();
-voidhttp_process_shutdown();
-voidhttp_process_display_output();
-voidhttp_process_test_completed();
+void http_process_user_input();
+void http_process_start(char *directory);
+void http_process_stop();
+void http_process_shutdown();
+void http_process_display_output();
+void http_process_test_completed();
 
-#endif/*__HTTP_PROCESS_H*/
+#endif /*__HTTP_PROCESS_H */

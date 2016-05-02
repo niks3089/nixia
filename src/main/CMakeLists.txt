@@ -1,18 +1,18 @@
-FILE(GLOBnixia_sources*.c)
-FILE(GLOBnixia_headers*.h)
+FILE(GLOB nixia_sources *.c)
+FILE(GLOB nixia_headers *.h)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-add_executable(nixia${nixia_sources})
-target_link_libraries(nixia
-logcommonhttpcsperfcommon
-libeventrtmpthread
-libeventlibzloglibevent_pthreadslibevhtplibhiredislibncurses)
+add_executable(nixia ${nixia_sources}) 
+target_link_libraries(nixia 
+        log common http csperf common
+        libevent rt m pthread
+        libevent libzlog libevent_pthreads libevhtp libhiredis libncurses)
 
-#Copyconfigurationfiles
-install(FILES${LOG_CONFIG}DESTINATION${CONFIG_DIR}
-PERMISSIONSOWNER_EXECUTEOWNER_WRITEOWNER_READ
-GROUP_EXECUTEGROUP_WRITEGROUP_READ
-WORLD_EXECUTEWORLD_WRITEWORLD_READ)
+# Copy configuration files  
+install(FILES ${LOG_CONFIG} DESTINATION ${CONFIG_DIR}
+    PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
+    GROUP_EXECUTE GROUP_WRITE GROUP_READ
+    WORLD_EXECUTE WORLD_WRITE WORLD_READ)
 
-install(TARGETSnixiaRUNTIMEDESTINATION/usr/local/bin)
+install(TARGETS nixia RUNTIME DESTINATION /usr/local/bin)

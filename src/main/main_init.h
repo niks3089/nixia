@@ -1,22 +1,22 @@
 /*
-*Copyright(C)2015NikhilAP
+*    Copyright (C) 2015 Nikhil AP 
 *
-*Thisprogramisfreesoftware:youcanredistributeitand/ormodify
-*itunderthetermsoftheGNUGeneralPublicLicenseaspublishedby
-*theFreeSoftwareFoundation,eitherversion3oftheLicense,or
-*(atyouroption)anylaterversion.
+*    This program is free software: you can redistribute it and/or modify
+*    it under the terms of the GNU General Public License as published by
+*    the Free Software Foundation, either version 3 of the License, or
+*    (at your option) any later version.
 *
-*Thisprogramisdistributedinthehopethatitwillbeuseful,
-*butWITHOUTANYWARRANTY;withouteventheimpliedwarrantyof
-*MERCHANTABILITYorFITNESSFORAPARTICULARPURPOSE.Seethe
-*GNUGeneralPublicLicenseformoredetails.
+*    This program is distributed in the hope that it will be useful,
+*    but WITHOUT ANY WARRANTY; without even the implied warranty of
+*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*    GNU General Public License for more details.
 *
-*YoushouldhavereceivedacopyoftheGNUGeneralPublicLicense
-*alongwiththisprogram.Ifnot,see<http://www.gnu.org/licenses/>.
+*    You should have received a copy of the GNU General Public License
+*    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef__MAIN_INIT_H
-#define__MAIN_INIT_H
+#ifndef __MAIN_INIT_H
+#define __MAIN_INIT_H
 
-voidmain_init(intargc,char**argv);
-#endif/*__MAIN_INIT_H*/
+void main_init(int argc, char** argv);
+#endif /* __MAIN_INIT_H */

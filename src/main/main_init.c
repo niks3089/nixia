@@ -1,121 +1,121 @@
 /*
-*Copyright(C)2015NikhilAP
+*    Copyright (C) 2015 Nikhil AP 
 *
-*Thisprogramisfreesoftware:youcanredistributeitand/ormodify
-*itunderthetermsoftheGNUGeneralPublicLicenseaspublishedby
-*theFreeSoftwareFoundation,eitherversion3oftheLicense,or
-*(atyouroption)anylaterversion.
+*    This program is free software: you can redistribute it and/or modify
+*    it under the terms of the GNU General Public License as published by
+*    the Free Software Foundation, either version 3 of the License, or
+*    (at your option) any later version.
 *
-*Thisprogramisdistributedinthehopethatitwillbeuseful,
-*butWITHOUTANYWARRANTY;withouteventheimpliedwarrantyof
-*MERCHANTABILITYorFITNESSFORAPARTICULARPURPOSE.Seethe
-*GNUGeneralPublicLicenseformoredetails.
+*    This program is distributed in the hope that it will be useful,
+*    but WITHOUT ANY WARRANTY; without even the implied warranty of
+*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*    GNU General Public License for more details.
 *
-*YoushouldhavereceivedacopyoftheGNUGeneralPublicLicense
-*alongwiththisprogram.Ifnot,see<http://www.gnu.org/licenses/>.
+*    You should have received a copy of the GNU General Public License
+*    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include<stdio.h>
-#include<stdlib.h>
-#include<signal.h>
-#include<unistd.h>
-#include<hiredis.h>
-#include<ncurses/ncurses.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <signal.h>
+#include <unistd.h>
+#include <hiredis.h>
+#include <ncurses/ncurses.h>
 
-#include"log.h"
-#include"common.h"
-#include"json_parser.h"
-#include"main_process.h"
-#include"main_config.h"
+#include "log.h"
+#include "common.h"
+#include "json_parser.h"
+#include "main_process.h"
+#include "main_config.h"
 
-/*Placewheremagicstarts.
-*InitializemodulesandfireupthemainUI*/
+/* Place where magic starts.
+ * Initialize modules and fire up the main UI */
 void
-main_init(intargc,char**argv)
+main_init(int argc, char** argv)
 {
-interror=0;
-char*json_data=NULL;
-main_config_user_input_t*user_input=NULL;
+    int error = 0;
+    char *json_data = NULL;
+    main_config_user_input_t *user_input = NULL;
 
-/*Initalizeourloggingmodule.*/
-if((error=log_init())){
-fprintf(stderr,"Failedtoinitloggingmodule.error:%d\n",error);
-exit(1);
+    /* Initalize our logging module. */
+    if ((error = log_init())) {
+        fprintf(stderr, "Failed to init logging module. error: %d\n", error);
+        exit(1);
+    }
+    zlog_info(log_get_cat(), "Initialized logging module");
+
+    signal (SIGINT, main_process_sigint_handler);
+
+    /* Parse the arguments */
+    user_input = main_process_parse_command_line(argc, argv);
+
+    if (!user_input) {
+        exit(1) ;
+    }
+
+    if (access(user_input->config_file, F_OK )  <  0) {
+        zlog_error(log_get_cat(), "Config file doesn't exist.");
+        fprintf(stderr, "Config file doesn't exist.\n");
+        exit(1);
+    }
+
+    zlog_info(log_get_cat(), "Parsing file :%s", user_input->config_file);
+    json_data = json_parser_parse_file(user_input->config_file); 
+
+    if (!json_data) {
+        zlog_error(log_get_cat(), "Failed to load configuration");
+        if (!user_input->gui_mode) {
+            fprintf(stdout, "Failed to load configuration.\n");
+        }
+        exit(1);
+    } else if (!cJSON_Parse(json_data)) {
+        zlog_error(log_get_cat(), "Failed to validate configuration. "
+                "Error: %s", cJSON_GetErrorPtr());
+        if (!user_input->gui_mode) {
+            fprintf(stdout, "Failed to validate configuration. Error: %s\n",
+                    cJSON_GetErrorPtr());
+        }
+        exit(1);
+    }
+
+    /* Initial main process and protocol configuration */
+    if ((error = main_process_init(!user_input->gui_mode, json_data))) {
+        zlog_error(log_get_cat(), "Failed to init main process");
+        main_process_config_user_input_cleanup(user_input);
+        main_process_shutdown();
+        exit(1);
+    }
+
+    if ((error = main_process_start_output())) {
+        zlog_error(log_get_cat(), "Failed to start the maint thread");
+        main_process_config_user_input_cleanup(user_input);
+        main_process_shutdown();
+        exit(1);
+    }
+
+    if (!user_input->gui_mode) {
+        initscr();
+        mvprintw(0, 0, "Running test. Please wait...\n");
+        refresh();
+    } 
+
+    /* Cleanup user input. We don't need it anymore */
+    main_process_config_user_input_cleanup(user_input);
+
+    /* Start the test */
+    main_process_start_test();
+
+    /* Tests are completed */
+    main_process_wait_for_completion();
+    zlog_error(log_get_cat(), "Tests completed");
+
+    /* TODO: we might need to move where program
+     * actually closes */
+    //zlog_fini();
 }
-zlog_info(log_get_cat(),"Initializedloggingmodule");
 
-signal(SIGINT,main_process_sigint_handler);
-
-/*Parsethearguments*/
-user_input=main_process_parse_command_line(argc,argv);
-
-if(!user_input){
-exit(1);
-}
-
-if(access(user_input->config_file,F_OK)<0){
-zlog_error(log_get_cat(),"Configfiledoesn'texist.");
-fprintf(stderr,"Configfiledoesn'texist.\n");
-exit(1);
-}
-
-zlog_info(log_get_cat(),"Parsingfile:%s",user_input->config_file);
-json_data=json_parser_parse_file(user_input->config_file);
-
-if(!json_data){
-zlog_error(log_get_cat(),"Failedtoloadconfiguration");
-if(!user_input->gui_mode){
-fprintf(stdout,"Failedtoloadconfiguration.\n");
-}
-exit(1);
-}elseif(!cJSON_Parse(json_data)){
-zlog_error(log_get_cat(),"Failedtovalidateconfiguration."
-"Error:%s",cJSON_GetErrorPtr());
-if(!user_input->gui_mode){
-fprintf(stdout,"Failedtovalidateconfiguration.Error:%s\n",
-cJSON_GetErrorPtr());
-}
-exit(1);
-}
-
-/*Initialmainprocessandprotocolconfiguration*/
-if((error=main_process_init(!user_input->gui_mode,json_data))){
-zlog_error(log_get_cat(),"Failedtoinitmainprocess");
-main_process_config_user_input_cleanup(user_input);
-main_process_shutdown();
-exit(1);
-}
-
-if((error=main_process_start_output())){
-zlog_error(log_get_cat(),"Failedtostartthemaintthread");
-main_process_config_user_input_cleanup(user_input);
-main_process_shutdown();
-exit(1);
-}
-
-if(!user_input->gui_mode){
-initscr();
-mvprintw(0,0,"Runningtest.Pleasewait...\n");
-refresh();
-}
-
-/*Cleanupuserinput.Wedon'tneeditanymore*/
-main_process_config_user_input_cleanup(user_input);
-
-/*Startthetest*/
-main_process_start_test();
-
-/*Testsarecompleted*/
-main_process_wait_for_completion();
-zlog_error(log_get_cat(),"Testscompleted");
-
-/*TODO:wemightneedtomovewhereprogram
-*actuallycloses*/
-//zlog_fini();
-}
-
-intmain(intargc,char**argv)
+int main(int argc, char** argv)
 {
-main_init(argc,argv);
-return0;
+    main_init(argc, argv);
+    return 0;
 }

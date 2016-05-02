@@ -1,111 +1,111 @@
 /*
-*Copyright(C)2015NikhilAP
+*    Copyright (C) 2015 Nikhil AP 
 *
-*Thisprogramisfreesoftware:youcanredistributeitand/ormodify
-*itunderthetermsoftheGNUGeneralPublicLicenseaspublishedby
-*theFreeSoftwareFoundation,eitherversion3oftheLicense,or
-*(atyouroption)anylaterversion.
+*    This program is free software: you can redistribute it and/or modify
+*    it under the terms of the GNU General Public License as published by
+*    the Free Software Foundation, either version 3 of the License, or
+*    (at your option) any later version.
 *
-*Thisprogramisdistributedinthehopethatitwillbeuseful,
-*butWITHOUTANYWARRANTY;withouteventheimpliedwarrantyof
-*MERCHANTABILITYorFITNESSFORAPARTICULARPURPOSE.Seethe
-*GNUGeneralPublicLicenseformoredetails.
+*    This program is distributed in the hope that it will be useful,
+*    but WITHOUT ANY WARRANTY; without even the implied warranty of
+*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*    GNU General Public License for more details.
 *
-*YoushouldhavereceivedacopyoftheGNUGeneralPublicLicense
-*alongwiththisprogram.Ifnot,see<http://www.gnu.org/licenses/>.
+*    You should have received a copy of the GNU General Public License
+*    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef__HTTP_STATS_H
-#define__HTTP_STATS_H
+#ifndef __HTTP_STATS_H
+#define __HTTP_STATS_H
 
-typedefstructhttp_stats_connection_s{
-structtimespecrequest_transfer_time;
-structtimespecconn_run_time;
+typedef struct http_stats_connection_s {
+    struct timespec request_transfer_time;
+    struct timespec conn_run_time;
 
-uint8_thttp_transfer_error:1,
-http_internal_error:1,
-http_code_unused:6;
+    uint8_t http_transfer_error: 1,
+            http_internal_error: 1,
+            http_code_unused : 6;
 
-uint32_thttp_code_1xx;
-uint32_thttp_code_2xx;
-uint32_thttp_code_3xx;
-uint32_thttp_code_4xx;
-uint32_thttp_code_5xx;
+    uint32_t     http_code_1xx;
+    uint32_t     http_code_2xx;
+    uint32_t     http_code_3xx;
+    uint32_t     http_code_4xx;
+    uint32_t     http_code_5xx;
 
-/*Thetotaltimeinsecondsforthetransfer*/
-doubletotal_transfer_time;
-doubletotal_connection_time;
+    /* The total time in seconds for the transfer */
+    double        total_transfer_time;
+    double        total_connection_time;
 
-/*Totalamountofbytesthatwereuploaded.*/
-doubleuploaded_bytes;
+    /* Total amount of bytes that were uploaded. */
+    double        uploaded_bytes;
 
-/*Averageuploadspeedinbytes/second*/
-doubleupload_speed;
+    /* Average upload speed in bytes/second */
+    double        upload_speed;
 
-/*Totalamountofbytesthatweredownloadedforlasttransfer.*/
-doubledownloaded_bytes;
+    /* Total amount of bytes that were downloaded for last transfer. */
+    double        downloaded_bytes;
 
-/*Averageuploadspeedinbytes/second*/
-doubledownload_speed;
+    /* Average upload speed in bytes/second */
+    double        download_speed;
 
-uint32_ttotal_requests_sent;
-uint32_ttotal_responses_received;
-}http_stats_connection_t;
+    uint32_t      total_requests_sent;
+    uint32_t      total_responses_received;
+} http_stats_connection_t;
 
-typedefhttp_stats_connection_thttp_stats_request_t;
+typedef http_stats_connection_t http_stats_request_t;
 
-typedefstructhttp_stats_request_table_s{
-uint32_ttotal_requests;
-uint32_tcurrent_request;
-http_stats_request_trequest_table[1];
-}http_stats_request_table_t;
+typedef struct http_stats_request_table_s {
+    uint32_t             total_requests;
+    uint32_t             current_request;
+    http_stats_request_t request_table[1];
+} http_stats_request_table_t;
 
-typedefstructhttp_stats_base_s{
+typedef struct http_stats_base_s {
 
-/*Timerelatedstats*/
-structtimespecrun_time;
-doubletotal_run_time;
+    /* Time related stats */
+    struct timespec run_time;
+    double          total_run_time;
 
-/*Totalstats*/
-uint32_ttotal_running_connections;
-uint32_ttotal_completed_connections;
-uint32_ttotal_requests_sent;
-uint32_ttotal_responses_received;
-uint32_ttotal_errors;
-uint32_ttotal_successful_connects;
-uint32_ttotal_failed_connects;
-uint32_ttotal_failed_connections;
-uint32_ttotal_uploaded_bytes;
-uint32_ttotal_downloaded_bytes;
-uint32_ttotal_http_code_1xx;
-uint32_ttotal_http_code_2xx;
-uint32_ttotal_http_code_3xx;
-uint32_ttotal_http_code_4xx;
-uint32_ttotal_http_code_5xx;
+    /* Total stats */
+    uint32_t total_running_connections;
+    uint32_t total_completed_connections;
+    uint32_t total_requests_sent;
+    uint32_t total_responses_received;
+    uint32_t total_errors;
+    uint32_t total_successful_connects;
+    uint32_t total_failed_connects;
+    uint32_t total_failed_connections;
+    uint32_t total_uploaded_bytes;
+    uint32_t total_downloaded_bytes;
+    uint32_t total_http_code_1xx;
+    uint32_t total_http_code_2xx;
+    uint32_t total_http_code_3xx;
+    uint32_t total_http_code_4xx;
+    uint32_t total_http_code_5xx;
 
-/*Averagestatsforsuccessfulconnections*/
-doubleaverage_transfer_time;
-doubleaverage_upload_speed;
-doubleaverage_download_speed;
-doubleaverage_requests_sent_in_a_second;
-doubleaverage_responses_received_in_a_second;
+    /* Average stats for successful connections */
+    double average_transfer_time;
+    double average_upload_speed;
+    double average_download_speed;
+    double average_requests_sent_in_a_second;
+    double average_responses_received_in_a_second;
 
-/*Currentstats*/
-uint32_trequests_sent_in_a_second;
-uint32_tresponses_received_in_a_second;
+    /* Current stats */
+    uint32_t requests_sent_in_a_second;
+    uint32_t responses_received_in_a_second;
 
-/*Percentiles*/
-doublerequest_percentile_95;
+    /* Percentiles */
+    double request_percentile_95;
 
-http_stats_request_table_t*requests_stat_table;
+    http_stats_request_table_t *requests_stat_table;
 
-}http_stats_base_t;
+} http_stats_base_t;
 
-voidhttp_stats_calculate_average(double*curr_average,
-doublenew_value,uint32_ttotal);
+void http_stats_calculate_average(double *curr_average,
+        double new_value, uint32_t total);
 
-http_stats_request_table_t*http_stats_init_request_table(uint32_ttotal_requests);
-voidhttp_stats_calculate_request_percentile(void*data);
-voidhttp_stats_update_engine_stats(http_stats_base_t*engine_stats,
-http_stats_base_t*worker_stats,intworkers);
-#endif/*__HTTP_STATS_H*/
+http_stats_request_table_t *http_stats_init_request_table(uint32_t total_requests);
+void http_stats_calculate_request_percentile(void *data);
+void http_stats_update_engine_stats(http_stats_base_t *engine_stats,
+        http_stats_base_t *worker_stats, int workers);
+#endif /* __HTTP_STATS_H */

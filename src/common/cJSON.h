@@ -1,142 +1,142 @@
 /*
-Copyright(c)2009DaveGamble
-
-Permissionisherebygranted,freeofcharge,toanypersonobtainingacopy
-ofthissoftwareandassociateddocumentationfiles(the"Software"),todeal
-intheSoftwarewithoutrestriction,includingwithoutlimitationtherights
-touse,copy,modify,merge,publish,distribute,sublicense,and/orsell
-copiesoftheSoftware,andtopermitpersonstowhomtheSoftwareis
-furnishedtodoso,subjecttothefollowingconditions:
-
-Theabovecopyrightnoticeandthispermissionnoticeshallbeincludedin
-allcopiesorsubstantialportionsoftheSoftware.
-
-THESOFTWAREISPROVIDED"ASIS",WITHOUTWARRANTYOFANYKIND,EXPRESSOR
-IMPLIED,INCLUDINGBUTNOTLIMITEDTOTHEWARRANTIESOFMERCHANTABILITY,
-FITNESSFORAPARTICULARPURPOSEANDNONINFRINGEMENT.INNOEVENTSHALLTHE
-AUTHORSORCOPYRIGHTHOLDERSBELIABLEFORANYCLAIM,DAMAGESOROTHER
-LIABILITY,WHETHERINANACTIONOFCONTRACT,TORTOROTHERWISE,ARISINGFROM,
-OUTOFORINCONNECTIONWITHTHESOFTWAREORTHEUSEOROTHERDEALINGSIN
-THESOFTWARE.
+  Copyright (c) 2009 Dave Gamble
+ 
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+ 
+  The above copyright notice and this permission notice shall be included in
+  all copies or substantial portions of the Software.
+ 
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+  THE SOFTWARE.
 */
 
-#ifndefcJSON__h
-#definecJSON__h
+#ifndef cJSON__h
+#define cJSON__h
 
-#ifdef__cplusplus
-extern"C"
+#ifdef __cplusplus
+extern "C"
 {
 #endif
 
-/*cJSONTypes:*/
-#definecJSON_False0
-#definecJSON_True1
-#definecJSON_NULL2
-#definecJSON_Number3
-#definecJSON_String4
-#definecJSON_Array5
-#definecJSON_Object6
+/* cJSON Types: */
+#define cJSON_False 0
+#define cJSON_True 1
+#define cJSON_NULL 2
+#define cJSON_Number 3
+#define cJSON_String 4
+#define cJSON_Array 5
+#define cJSON_Object 6
+	
+#define cJSON_IsReference 256
 
-#definecJSON_IsReference256
+/* The cJSON structure: */
+typedef struct cJSON {
+	struct cJSON *next,*prev;	/* next/prev allow you to walk array/object chains. Alternatively, use GetArraySize/GetArrayItem/GetObjectItem */
+	struct cJSON *child;		/* An array or object item will have a child pointer pointing to a chain of the items in the array/object. */
 
-/*ThecJSONstructure:*/
-typedefstructcJSON{
-structcJSON*next,*prev;/*next/prevallowyoutowalkarray/objectchains.Alternatively,useGetArraySize/GetArrayItem/GetObjectItem*/
-structcJSON*child;/*Anarrayorobjectitemwillhaveachildpointerpointingtoachainoftheitemsinthearray/object.*/
+	int type;					/* The type of the item, as above. */
 
-inttype;/*Thetypeoftheitem,asabove.*/
+	char *valuestring;			/* The item's string, if type==cJSON_String */
+	int valueint;				/* The item's number, if type==cJSON_Number */
+	double valuedouble;			/* The item's number, if type==cJSON_Number */
 
-char*valuestring;/*Theitem'sstring,iftype==cJSON_String*/
-intvalueint;/*Theitem'snumber,iftype==cJSON_Number*/
-doublevaluedouble;/*Theitem'snumber,iftype==cJSON_Number*/
+	char *string;				/* The item's name string, if this item is the child of, or is in the list of subitems of an object. */
+} cJSON;
 
-char*string;/*Theitem'snamestring,ifthisitemisthechildof,orisinthelistofsubitemsofanobject.*/
-}cJSON;
+typedef struct cJSON_Hooks {
+      void *(*malloc_fn)(size_t sz);
+      void (*free_fn)(void *ptr);
+} cJSON_Hooks;
 
-typedefstructcJSON_Hooks{
-void*(*malloc_fn)(size_tsz);
-void(*free_fn)(void*ptr);
-}cJSON_Hooks;
-
-/*Supplymalloc,reallocandfreefunctionstocJSON*/
-externvoidcJSON_InitHooks(cJSON_Hooks*hooks);
+/* Supply malloc, realloc and free functions to cJSON */
+extern void cJSON_InitHooks(cJSON_Hooks* hooks);
 
 
-/*SupplyablockofJSON,andthisreturnsacJSONobjectyoucaninterrogate.CallcJSON_Deletewhenfinished.*/
-externcJSON*cJSON_Parse(constchar*value);
-/*RenderacJSONentitytotextfortransfer/storage.Freethechar*whenfinished.*/
-externchar*cJSON_Print(cJSON*item);
-/*RenderacJSONentitytotextfortransfer/storagewithoutanyformatting.Freethechar*whenfinished.*/
-externchar*cJSON_PrintUnformatted(cJSON*item);
-/*DeleteacJSONentityandallsubentities.*/
-externvoidcJSON_Delete(cJSON*c);
+/* Supply a block of JSON, and this returns a cJSON object you can interrogate. Call cJSON_Delete when finished. */
+extern cJSON *cJSON_Parse(const char *value);
+/* Render a cJSON entity to text for transfer/storage. Free the char* when finished. */
+extern char  *cJSON_Print(cJSON *item);
+/* Render a cJSON entity to text for transfer/storage without any formatting. Free the char* when finished. */
+extern char  *cJSON_PrintUnformatted(cJSON *item);
+/* Delete a cJSON entity and all subentities. */
+extern void   cJSON_Delete(cJSON *c);
 
-/*Returnsthenumberofitemsinanarray(orobject).*/
-externintcJSON_GetArraySize(cJSON*array);
-/*Retrieveitemnumber"item"fromarray"array".ReturnsNULLifunsuccessful.*/
-externcJSON*cJSON_GetArrayItem(cJSON*array,intitem);
-/*Getitem"string"fromobject.Caseinsensitive.*/
-externcJSON*cJSON_GetObjectItem(cJSON*object,constchar*string);
+/* Returns the number of items in an array (or object). */
+extern int	  cJSON_GetArraySize(cJSON *array);
+/* Retrieve item number "item" from array "array". Returns NULL if unsuccessful. */
+extern cJSON *cJSON_GetArrayItem(cJSON *array,int item);
+/* Get item "string" from object. Case insensitive. */
+extern cJSON *cJSON_GetObjectItem(cJSON *object,const char *string);
 
-/*Foranalysingfailedparses.Thisreturnsapointertotheparseerror.You'llprobablyneedtolookafewcharsbacktomakesenseofit.DefinedwhencJSON_Parse()returns0.0whencJSON_Parse()succeeds.*/
-externconstchar*cJSON_GetErrorPtr(void);
+/* For analysing failed parses. This returns a pointer to the parse error. You'll probably need to look a few chars back to make sense of it. Defined when cJSON_Parse() returns 0. 0 when cJSON_Parse() succeeds. */
+extern const char *cJSON_GetErrorPtr(void);
+	
+/* These calls create a cJSON item of the appropriate type. */
+extern cJSON *cJSON_CreateNull(void);
+extern cJSON *cJSON_CreateTrue(void);
+extern cJSON *cJSON_CreateFalse(void);
+extern cJSON *cJSON_CreateBool(int b);
+extern cJSON *cJSON_CreateNumber(double num);
+extern cJSON *cJSON_CreateString(const char *string);
+extern cJSON *cJSON_CreateArray(void);
+extern cJSON *cJSON_CreateObject(void);
 
-/*ThesecallscreateacJSONitemoftheappropriatetype.*/
-externcJSON*cJSON_CreateNull(void);
-externcJSON*cJSON_CreateTrue(void);
-externcJSON*cJSON_CreateFalse(void);
-externcJSON*cJSON_CreateBool(intb);
-externcJSON*cJSON_CreateNumber(doublenum);
-externcJSON*cJSON_CreateString(constchar*string);
-externcJSON*cJSON_CreateArray(void);
-externcJSON*cJSON_CreateObject(void);
+/* These utilities create an Array of count items. */
+extern cJSON *cJSON_CreateIntArray(const int *numbers,int count);
+extern cJSON *cJSON_CreateFloatArray(const float *numbers,int count);
+extern cJSON *cJSON_CreateDoubleArray(const double *numbers,int count);
+extern cJSON *cJSON_CreateStringArray(const char **strings,int count);
 
-/*TheseutilitiescreateanArrayofcountitems.*/
-externcJSON*cJSON_CreateIntArray(constint*numbers,intcount);
-externcJSON*cJSON_CreateFloatArray(constfloat*numbers,intcount);
-externcJSON*cJSON_CreateDoubleArray(constdouble*numbers,intcount);
-externcJSON*cJSON_CreateStringArray(constchar**strings,intcount);
+/* Append item to the specified array/object. */
+extern void cJSON_AddItemToArray(cJSON *array, cJSON *item);
+extern void	cJSON_AddItemToObject(cJSON *object,const char *string,cJSON *item);
+/* Append reference to item to the specified array/object. Use this when you want to add an existing cJSON to a new cJSON, but don't want to corrupt your existing cJSON. */
+extern void cJSON_AddItemReferenceToArray(cJSON *array, cJSON *item);
+extern void	cJSON_AddItemReferenceToObject(cJSON *object,const char *string,cJSON *item);
 
-/*Appenditemtothespecifiedarray/object.*/
-externvoidcJSON_AddItemToArray(cJSON*array,cJSON*item);
-externvoidcJSON_AddItemToObject(cJSON*object,constchar*string,cJSON*item);
-/*Appendreferencetoitemtothespecifiedarray/object.UsethiswhenyouwanttoaddanexistingcJSONtoanewcJSON,butdon'twanttocorruptyourexistingcJSON.*/
-externvoidcJSON_AddItemReferenceToArray(cJSON*array,cJSON*item);
-externvoidcJSON_AddItemReferenceToObject(cJSON*object,constchar*string,cJSON*item);
+/* Remove/Detatch items from Arrays/Objects. */
+extern cJSON *cJSON_DetachItemFromArray(cJSON *array,int which);
+extern void   cJSON_DeleteItemFromArray(cJSON *array,int which);
+extern cJSON *cJSON_DetachItemFromObject(cJSON *object,const char *string);
+extern void   cJSON_DeleteItemFromObject(cJSON *object,const char *string);
+	
+/* Update array items. */
+extern void cJSON_ReplaceItemInArray(cJSON *array,int which,cJSON *newitem);
+extern void cJSON_ReplaceItemInObject(cJSON *object,const char *string,cJSON *newitem);
 
-/*Remove/DetatchitemsfromArrays/Objects.*/
-externcJSON*cJSON_DetachItemFromArray(cJSON*array,intwhich);
-externvoidcJSON_DeleteItemFromArray(cJSON*array,intwhich);
-externcJSON*cJSON_DetachItemFromObject(cJSON*object,constchar*string);
-externvoidcJSON_DeleteItemFromObject(cJSON*object,constchar*string);
+/* Duplicate a cJSON item */
+extern cJSON *cJSON_Duplicate(cJSON *item,int recurse);
+/* Duplicate will create a new, identical cJSON item to the one you pass, in new memory that will
+need to be released. With recurse!=0, it will duplicate any children connected to the item.
+The item->next and ->prev pointers are always zero on return from Duplicate. */
 
-/*Updatearrayitems.*/
-externvoidcJSON_ReplaceItemInArray(cJSON*array,intwhich,cJSON*newitem);
-externvoidcJSON_ReplaceItemInObject(cJSON*object,constchar*string,cJSON*newitem);
+/* ParseWithOpts allows you to require (and check) that the JSON is null terminated, and to retrieve the pointer to the final byte parsed. */
+extern cJSON *cJSON_ParseWithOpts(const char *value,const char **return_parse_end,int require_null_terminated);
 
-/*DuplicateacJSONitem*/
-externcJSON*cJSON_Duplicate(cJSON*item,intrecurse);
-/*Duplicatewillcreateanew,identicalcJSONitemtotheoneyoupass,innewmemorythatwill
-needtobereleased.Withrecurse!=0,itwillduplicateanychildrenconnectedtotheitem.
-Theitem->nextand->prevpointersarealwayszeroonreturnfromDuplicate.*/
+extern void cJSON_Minify(char *json);
 
-/*ParseWithOptsallowsyoutorequire(andcheck)thattheJSONisnullterminated,andtoretrievethepointertothefinalbyteparsed.*/
-externcJSON*cJSON_ParseWithOpts(constchar*value,constchar**return_parse_end,intrequire_null_terminated);
+/* Macros for creating things quickly. */
+#define cJSON_AddNullToObject(object,name)		cJSON_AddItemToObject(object, name, cJSON_CreateNull())
+#define cJSON_AddTrueToObject(object,name)		cJSON_AddItemToObject(object, name, cJSON_CreateTrue())
+#define cJSON_AddFalseToObject(object,name)		cJSON_AddItemToObject(object, name, cJSON_CreateFalse())
+#define cJSON_AddBoolToObject(object,name,b)	cJSON_AddItemToObject(object, name, cJSON_CreateBool(b))
+#define cJSON_AddNumberToObject(object,name,n)	cJSON_AddItemToObject(object, name, cJSON_CreateNumber(n))
+#define cJSON_AddStringToObject(object,name,s)	cJSON_AddItemToObject(object, name, cJSON_CreateString(s))
 
-externvoidcJSON_Minify(char*json);
+/* When assigning an integer value, it needs to be propagated to valuedouble too. */
+#define cJSON_SetIntValue(object,val)			((object)?(object)->valueint=(object)->valuedouble=(val):(val))
 
-/*Macrosforcreatingthingsquickly.*/
-#definecJSON_AddNullToObject(object,name)cJSON_AddItemToObject(object,name,cJSON_CreateNull())
-#definecJSON_AddTrueToObject(object,name)cJSON_AddItemToObject(object,name,cJSON_CreateTrue())
-#definecJSON_AddFalseToObject(object,name)cJSON_AddItemToObject(object,name,cJSON_CreateFalse())
-#definecJSON_AddBoolToObject(object,name,b)cJSON_AddItemToObject(object,name,cJSON_CreateBool(b))
-#definecJSON_AddNumberToObject(object,name,n)cJSON_AddItemToObject(object,name,cJSON_CreateNumber(n))
-#definecJSON_AddStringToObject(object,name,s)cJSON_AddItemToObject(object,name,cJSON_CreateString(s))
-
-/*Whenassigninganintegervalue,itneedstobepropagatedtovaluedoubletoo.*/
-#definecJSON_SetIntValue(object,val)((object)?(object)->valueint=(object)->valuedouble=(val):(val))
-
-#ifdef__cplusplus
+#ifdef __cplusplus
 }
 #endif
 

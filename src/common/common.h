@@ -1,40 +1,40 @@
 /*
-*Copyright(C)2015NikhilAP
+*    Copyright (C) 2015 Nikhil AP 
 *
-*Thisprogramisfreesoftware:youcanredistributeitand/ormodify
-*itunderthetermsoftheGNUGeneralPublicLicenseaspublishedby
-*theFreeSoftwareFoundation,eitherversion3oftheLicense,or
-*(atyouroption)anylaterversion.
+*    This program is free software: you can redistribute it and/or modify
+*    it under the terms of the GNU General Public License as published by
+*    the Free Software Foundation, either version 3 of the License, or
+*    (at your option) any later version.
 *
-*Thisprogramisdistributedinthehopethatitwillbeuseful,
-*butWITHOUTANYWARRANTY;withouteventheimpliedwarrantyof
-*MERCHANTABILITYorFITNESSFORAPARTICULARPURPOSE.Seethe
-*GNUGeneralPublicLicenseformoredetails.
+*    This program is distributed in the hope that it will be useful,
+*    but WITHOUT ANY WARRANTY; without even the implied warranty of
+*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*    GNU General Public License for more details.
 *
-*YoushouldhavereceivedacopyoftheGNUGeneralPublicLicense
-*alongwiththisprogram.Ifnot,see<http://www.gnu.org/licenses/>.
+*    You should have received a copy of the GNU General Public License
+*    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef__COMMON_H
-#define__COMMON_H
+#ifndef __COMMON_H
+#define __COMMON_H
 
-#include<stdint.h>
+#include <stdint.h>
 
-/*Donotincludeanyofourheaderfileshere!*/
+/* Do not include any of our header files here! */
 
-#defineLOG_CONFIG_FILE"/etc/nixia/log.conf"
-#defineLOG_CATEGORY"my_cat"
-#defineHTTP_LOG_CATEGORY"http_cat"
-#defineCSPERF_LOG_CATEGORY"csperf_cat"
+#define LOG_CONFIG_FILE "/etc/nixia/log.conf"
+#define LOG_CATEGORY "my_cat"
+#define HTTP_LOG_CATEGORY "http_cat"
+#define CSPERF_LOG_CATEGORY "csperf_cat"
 
-/*XSDfilesafterinstallation*/
-#defineCONFIG_XSD_FILE"/etc/nixia/config.xsd"
+/* XSD files after installation */
+#define CONFIG_XSD_FILE   "/etc/nixia/config.xsd"
 
-/*Somelengthstouse.*/
-#defineMESSAGE_ERR_LENGTH1500
-#defineMAX_MSG_LENGTH1500
-#defineMAX_NAME_LENGTH100
+/* Some lengths to use. */
+#define MESSAGE_ERR_LENGTH 1500 
+#define MAX_MSG_LENGTH     1500
+#define MAX_NAME_LENGTH    100
 
-/*Defaulttestnameanddirectory*/
-#defineDEFAULT_TEST_NAME"output_test"
-#endif/*__COMMON_H*/
+/* Default test name and directory */
+#define DEFAULT_TEST_NAME "output_test"
+#endif /* __COMMON_H */

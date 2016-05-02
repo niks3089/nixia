@@ -1,360 +1,360 @@
 /*
-*Copyright(C)2015NikhilAP
+*    Copyright (C) 2015 Nikhil AP 
 *
-*Thisprogramisfreesoftware:youcanredistributeitand/ormodify
-*itunderthetermsoftheGNUGeneralPublicLicenseaspublishedby
-*theFreeSoftwareFoundation,eitherversion3oftheLicense,or
-*(atyouroption)anylaterversion.
+*    This program is free software: you can redistribute it and/or modify
+*    it under the terms of the GNU General Public License as published by
+*    the Free Software Foundation, either version 3 of the License, or
+*    (at your option) any later version.
 *
-*Thisprogramisdistributedinthehopethatitwillbeuseful,
-*butWITHOUTANYWARRANTY;withouteventheimpliedwarrantyof
-*MERCHANTABILITYorFITNESSFORAPARTICULARPURPOSE.Seethe
-*GNUGeneralPublicLicenseformoredetails.
+*    This program is distributed in the hope that it will be useful,
+*    but WITHOUT ANY WARRANTY; without even the implied warranty of
+*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*    GNU General Public License for more details.
 *
-*YoushouldhavereceivedacopyoftheGNUGeneralPublicLicense
-*alongwiththisprogram.Ifnot,see<http://www.gnu.org/licenses/>.
+*    You should have received a copy of the GNU General Public License
+*    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include<stdlib.h>
-#include<string.h>
-#include<errno.h>
-#include<arpa/inet.h>
-#include<event2/bufferevent.h>
-#include<event2/buffer.h>
-#include<assert.h>
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
+#include <arpa/inet.h>
+#include <event2/bufferevent.h>
+#include <event2/buffer.h>
+#include <assert.h>
 
-#include"log.h"
-#include"csperf_server.h"
-#include"csperf_network.h"
+#include "log.h"
+#include "csperf_server.h"
+#include "csperf_network.h"
 
-/*Shutdownandclosetheclient*/
-staticvoid
-csperf_server_shutdown(csperf_server_t*server)
+/* Shutdown and close the client */
+static void
+csperf_server_shutdown(csperf_server_t *server)
 {
-inti;
+    int i;
 
-if(!server){
-return;
+    if (!server) {
+        return;
+    }
+
+    zlog_info(log_get_cat_csperf(), "Shutdown server\n");
+
+    if (server->show_stats) {
+        ansperf_stats_display(&server->stats, server->output_file);
+    }
+    if (server->buff_event) {
+        bufferevent_free(server->buff_event);
+    }
+    if(server->second_timer) {
+        event_free(server->second_timer);
+    }
+    csperf_config_cleanup(server->config);
+
+    if (server->command_pdu_table) {
+        for(i = 0; i < CS_CMD_MAX; i++) {
+            free(server->command_pdu_table[i]);
+        }
+    }
+
+    if (server->output_file) {
+        fclose(server->output_file);
+    }
+    event_base_loopbreak(server->evbase);
+    event_base_free(server->evbase);
+    free(server);
 }
 
-zlog_info(log_get_cat_csperf(),"Shutdownserver\n");
-
-if(server->show_stats){
-ansperf_stats_display(&server->stats,server->output_file);
-}
-if(server->buff_event){
-bufferevent_free(server->buff_event);
-}
-if(server->second_timer){
-event_free(server->second_timer);
-}
-csperf_config_cleanup(server->config);
-
-if(server->command_pdu_table){
-for(i=0;i<CS_CMD_MAX;i++){
-free(server->command_pdu_table[i]);
-}
-}
-
-if(server->output_file){
-fclose(server->output_file);
-}
-event_base_loopbreak(server->evbase);
-event_base_free(server->evbase);
-free(server);
-}
-
-/*Displaythestatsfirstandthenclearoutthestats*/
-staticvoid
-csperf_server_reset_stats(csperf_server_t*server)
+/* Display the stats first and then clear out the stats */
+static void
+csperf_server_reset_stats(csperf_server_t *server)
 {
-if(server->show_stats){
-ansperf_stats_display(&server->stats,server->output_file);
+    if (server->show_stats) {
+        ansperf_stats_display(&server->stats, server->output_file);
 
-/*Then0itout*/
-memset(&server->stats,0,sizeof(server->stats));
-server->show_stats=0;
-}
+        /* Then 0 it out */
+        memset(&server->stats, 0, sizeof(server->stats));
+        server->show_stats = 0;
+    }
 }
 
-/*Updatetimer.Itticksevery1second*/
-staticint
-csperf_server_timer_update(csperf_server_t*server)
+/* Update timer. It ticks every 1 second */
+static int
+csperf_server_timer_update(csperf_server_t *server)
 {
-structtimevaltimeout;
-timeout.tv_sec=1;
-timeout.tv_usec=0;
+    struct timeval timeout;
+    timeout.tv_sec = 1;
+    timeout.tv_usec = 0;
 
-evtimer_add(server->second_timer,&timeout);
+    evtimer_add(server->second_timer, &timeout);
 
-return0;
+    return 0;
 }
 
-/*Calledwhenthetimeouthappens*/
-staticvoid
-csperf_server_timer_cb(intfd,shortkind,void*userp)
+/* Called when the timeout happens */
+static void
+csperf_server_timer_cb(int fd, short kind, void *userp)
 {
-csperf_server_t*server=(csperf_server_t*)userp;
+    csperf_server_t *server = (csperf_server_t *)userp;
 
-/*Displaycurrentstats*/
-csperf_server_timer_update(server);
+    /* Display current stats */
+    csperf_server_timer_update(server);
 }
 
-/*Initserversubsystem*/
-staticcsperf_server_t*
-csperf_server_init(csperf_config_t*config)
+/* Init server subsystem */
+static csperf_server_t*
+csperf_server_init(csperf_config_t *config)
 {
-inti;
-csperf_server_t*server;
+    int i;
+    csperf_server_t *server;
 
-server=(csperf_server_t*)calloc(1,sizeof(csperf_server_t));
-if(!server){
-returnNULL;
+    server = (csperf_server_t *) calloc (1, sizeof(csperf_server_t));
+    if (!server) {
+        return NULL;
+    }
+
+    if (!(server->evbase = event_base_new())) {
+        free(server);
+        return NULL;
+    }
+
+    /* Set up all commands. We also do this once. 
+     * Not everything we set up might be used */
+    for (i = 0; i < CS_CMD_MAX; i++) {
+        if (!(server->command_pdu_table[i] = 
+            csperf_network_create_pdu(CS_MSG_COMMAND, i, 
+                CS_COMMAND_PDU_LEN))) {
+            free(server);
+            return NULL;
+        }
+    }
+
+    if (config->server_output_file) {
+        if (!(server->output_file = fopen(config->server_output_file, "w"))) {
+            zlog_warn(log_get_cat_csperf(), "Failed to create %s file\n", config->server_output_file);
+            free(server);
+            return NULL;
+        }
+    }
+
+    server->config = config;
+    return server;
 }
 
-if(!(server->evbase=event_base_new())){
-free(server);
-returnNULL;
-}
-
-/*Setupallcommands.Wealsodothisonce.
-*Noteverythingwesetupmightbeused*/
-for(i=0;i<CS_CMD_MAX;i++){
-if(!(server->command_pdu_table[i]=
-csperf_network_create_pdu(CS_MSG_COMMAND,i,
-CS_COMMAND_PDU_LEN))){
-free(server);
-returnNULL;
-}
-}
-
-if(config->server_output_file){
-if(!(server->output_file=fopen(config->server_output_file,"w"))){
-zlog_warn(log_get_cat_csperf(),"Failedtocreate%sfile\n",config->server_output_file);
-free(server);
-returnNULL;
-}
-}
-
-server->config=config;
-returnserver;
-}
-
-/*Calledafterwearedoneprocessingtheclientdata*/
-staticint
-csperf_server_send_mark_resp_command(csperf_server_t*server,uint8_tflags)
+/* Called after we are done processing the client data */
+static int
+csperf_server_send_mark_resp_command(csperf_server_t *server, uint8_t flags)
 {
-asn_command_pdu*command;
+    asn_command_pdu *command;
 
-command=(asn_command_pdu*)(&server->
-command_pdu_table[CS_CMD_MARK_RESP]->message);
+    command = (asn_command_pdu *)(&server->
+            command_pdu_table[CS_CMD_MARK_RESP]->message);
 
-command->blocks_to_receive=server->config->total_data_blocks;
-command->echo_timestamp=command->echoreply_timestamp=
-server->client_last_received_timestamp;
-server->transfer_flags=command->flags=flags;
-server->stats.total_commands_sent++;
+    command->blocks_to_receive = server->config->total_data_blocks;
+    command->echo_timestamp = command->echoreply_timestamp = 
+        server->client_last_received_timestamp;
+    server->transfer_flags = command->flags = flags;
+    server->stats.total_commands_sent++;
 
-/*Calculatethetimetoprocessthedata*/
-server->stats.time_to_process_data=
-csperf_network_get_time(server->stats.mark_sent_time)-
-server->client_last_received_timestamp;
+    /* Calculate the time to process the data */
+    server->stats.time_to_process_data =
+        csperf_network_get_time(server->stats.mark_sent_time) -
+        server->client_last_received_timestamp;
 
-/*Endof1cycle*/
-server->show_stats=1;
-csperf_server_reset_stats(server);
+    /* End of 1 cycle */
+    server->show_stats = 1;
+    csperf_server_reset_stats(server);
 
-returnbufferevent_write(server->buff_event,
-server->command_pdu_table[CS_CMD_MARK_RESP],
-CS_HEADER_PDU_LEN+CS_COMMAND_PDU_LEN);
+    return bufferevent_write(server->buff_event, 
+        server->command_pdu_table[CS_CMD_MARK_RESP], 
+        CS_HEADER_PDU_LEN + CS_COMMAND_PDU_LEN);
 }
 
-staticint
-csperf_server_process_data(csperf_server_t*server,structevbuffer*buf,
-uint32_tlen)
+static int
+csperf_server_process_data(csperf_server_t *server, struct evbuffer *buf,
+        uint32_t len)
 {
-server->stats.total_bytes_received+=len;
-server->stats.total_blocks_received++;
+    server->stats.total_bytes_received += len;
+    server->stats.total_blocks_received++;
 
-if(server->transfer_flags==CS_FLAG_DUPLEX){
-/*Moveittobufferevent'soutputqueue.
-*Basically,wearejustechoingbackthedata*/
-evbuffer_remove_buffer
-(buf,bufferevent_get_output(server->buff_event),len);
-server->stats.total_bytes_sent+=len;
-server->stats.total_blocks_sent++;
-}else{
-/*Silentdraindata*/
-evbuffer_drain(buf,len);
+    if (server->transfer_flags == CS_FLAG_DUPLEX) {
+        /* Move it to buffer event's output queue.
+         * Basically, we are just echoing back the data */
+        evbuffer_remove_buffer
+            (buf, bufferevent_get_output(server->buff_event), len);
+        server->stats.total_bytes_sent +=  len;
+        server->stats.total_blocks_sent++;
+    } else {
+        /* Silent drain data */
+        evbuffer_drain(buf, len);
+    }
+
+    /* Thats the datablocks we receive. Send mark resp command */
+    if (server->stats.total_blocks_received >=
+            server->config->total_data_blocks) {
+        csperf_server_send_mark_resp_command(server, 0);
+    }
+    return 0;
 }
 
-/*Thatsthedatablockswereceive.Sendmarkrespcommand*/
-if(server->stats.total_blocks_received>=
-server->config->total_data_blocks){
-csperf_server_send_mark_resp_command(server,0);
-}
-return0;
-}
-
-/*Processthecommand*/
-staticint
-csperf_server_process_command(csperf_server_t*server,structevbuffer*buf)
+/* Process the command  */
+static int
+csperf_server_process_command(csperf_server_t *server, struct evbuffer *buf)
 {
-asn_command_pducommand={0};
+    asn_command_pdu command = { 0 };
 
-/*Removeheader*/
-evbuffer_drain(buf,CS_HEADER_PDU_LEN);
+    /* Remove header */
+    evbuffer_drain(buf, CS_HEADER_PDU_LEN);
 
-evbuffer_remove(buf,&command,CS_COMMAND_PDU_LEN);
+    evbuffer_remove(buf, &command, CS_COMMAND_PDU_LEN);
 
-switch(command.command_type){
-caseCS_CMD_MARK:
-assert(command.blocks_to_receive);
-server->transfer_flags=command.flags;
-server->config->total_data_blocks=command.blocks_to_receive;
-server->client_last_received_timestamp=command.echo_timestamp;
-csperf_network_get_time(server->stats.mark_received_time);
-break;
-default:
-zlog_warn(log_get_cat_csperf(),"Unexpectedcommand\n");
-return-1;
+    switch (command.command_type) {
+    case CS_CMD_MARK:
+        assert(command.blocks_to_receive);
+        server->transfer_flags = command.flags;
+        server->config->total_data_blocks = command.blocks_to_receive; 
+        server->client_last_received_timestamp = command.echo_timestamp; 
+        csperf_network_get_time(server->stats.mark_received_time);
+        break;
+    default:
+        zlog_warn(log_get_cat_csperf(), "Unexpected command\n");
+        return -1;
+    }
+    server->stats.total_commands_received++;
+    return 0;
 }
-server->stats.total_commands_received++;
-return0;
-}
 
-staticvoid
-csperf_accept_error(structevconnlistener*listener,void*ctx)
+static void
+csperf_accept_error(struct evconnlistener *listener, void *ctx)
 {
-interr=EVUTIL_SOCKET_ERROR();
+    int err = EVUTIL_SOCKET_ERROR();
 
-zlog_warn(log_get_cat_csperf(),"Server:Gotanerror%d(%s)onthelistener."
-"Shuttingdown.\n",err,evutil_socket_error_to_string(err));
+    zlog_warn(log_get_cat_csperf(), "Server:Got an error %d (%s) on the listener. "
+        "Shutting down.\n", err, evutil_socket_error_to_string(err));
 
-csperf_server_shutdown((csperf_server_t*)ctx);
+    csperf_server_shutdown((csperf_server_t *)ctx);
 }
 
-/*Calledwhenthereisnewstufftoberead*/
-void
-csperf_server_readcb(structbufferevent*bev,void*ptr)
+/* Called when there is new stuff to be read */
+void 
+csperf_server_readcb(struct bufferevent *bev, void *ptr)
 {
-structevbuffer*input_buf;
-intmessage_type;
-csperf_server_t*server=(csperf_server_t*)ptr;
-uint32_tlen=0;
+    struct evbuffer *input_buf;
+    int message_type;
+    csperf_server_t *server = (csperf_server_t *) ptr;
+    uint32_t len = 0; 
 
-/*Getbufferfrominputqueue*/
-do{
-input_buf=bufferevent_get_input(bev);
-message_type=csperf_network_get_pdu_type(input_buf,&len);
+    /* Get buffer from input queue */
+    do {
+        input_buf = bufferevent_get_input(bev);
+        message_type = csperf_network_get_pdu_type(input_buf, &len);
 
-/*Completepduhasn'tarrivedyet*/
-if(!message_type){
-break;
+        /* Complete pdu hasn't arrived yet */
+        if (!message_type) {
+            break;
+        }
+
+        if (message_type == CS_MSG_DATA) {
+            csperf_server_process_data(server, input_buf, len);
+        } else if (message_type == CS_MSG_COMMAND) {
+            /* We got a command from server */
+            csperf_server_process_command(server, input_buf);
+        } else {
+            assert(0);
+        }
+    } while(input_buf && evbuffer_get_length(input_buf));
 }
 
-if(message_type==CS_MSG_DATA){
-csperf_server_process_data(server,input_buf,len);
-}elseif(message_type==CS_MSG_COMMAND){
-/*Wegotacommandfromserver*/
-csperf_server_process_command(server,input_buf);
-}else{
-assert(0);
-}
-}while(input_buf&&evbuffer_get_length(input_buf));
-}
-
-/*Handleeventsthatwegetonaconnection*/
-void
-csperf_server_eventcb(structbufferevent*bev,shortevents,void*ctx)
+/* Handle events that we get on a connection */
+void 
+csperf_server_eventcb(struct bufferevent *bev, short events, void *ctx)
 {
-csperf_server_t*server=ctx;
-intfinished=0;
+    csperf_server_t *server = ctx;
+    int finished = 0;
 
-if(events&BEV_EVENT_ERROR){
-zlog_warn(log_get_cat_csperf(),"Error:%s\n",evutil_socket_error_to_string(EVUTIL_SOCKET_ERROR()));
-finished=1;
+    if (events & BEV_EVENT_ERROR) {
+        zlog_warn(log_get_cat_csperf(), "Error: %s\n", evutil_socket_error_to_string(EVUTIL_SOCKET_ERROR()));
+        finished = 1;
+    } 
+
+    if (events & BEV_EVENT_EOF) {
+        finished = 1;
+    }
+
+    if (finished) {
+        /* Display stats */
+        csperf_server_reset_stats(server);
+    }
 }
 
-if(events&BEV_EVENT_EOF){
-finished=1;
-}
-
-if(finished){
-/*Displaystats*/
-csperf_server_reset_stats(server);
-}
-}
-
-staticvoid
-csperf_server_accept(structevconnlistener*listener,
-evutil_socket_tfd,structsockaddr*address,intsocklen,
-void*ctx)
+static void
+csperf_server_accept(struct evconnlistener *listener,
+    evutil_socket_t fd, struct sockaddr *address, int socklen,
+    void *ctx)
 {
-csperf_server_t*server=(csperf_server_t*)ctx;
-structevent_base*base=evconnlistener_get_base(listener);
+    csperf_server_t  *server = (csperf_server_t *)ctx;
+    struct event_base *base = evconnlistener_get_base(listener);
 
-/*Currentlywecanhandlejustoneclient.Createanarray
-ofbuffereventswhenweneedtosupportmore*/
-server->buff_event=bufferevent_socket_new(base,fd,
-BEV_OPT_CLOSE_ON_FREE);
+    /* Currently we can handle just one client. Create an array
+       of buffer events when we need to support more */
+    server->buff_event = bufferevent_socket_new(base, fd, 
+            BEV_OPT_CLOSE_ON_FREE);
 
-/*Wegotanewconnection!Setupabuffereventforit.*/
-/*Setcallbacks*/
-bufferevent_setcb(server->buff_event,csperf_server_readcb,
-NULL,csperf_server_eventcb,server);
-bufferevent_enable(server->buff_event,EV_READ|EV_WRITE);
-bufferevent_setwatermark(server->buff_event,EV_READ,CS_HEADER_PDU_LEN,0);
-server->show_stats=1;
+    /* We got a new connection! Set up a bufferevent for it. */
+    /* Set callbacks */
+    bufferevent_setcb(server->buff_event, csperf_server_readcb, 
+            NULL, csperf_server_eventcb, server);
+    bufferevent_enable(server->buff_event, EV_READ|EV_WRITE);
+    bufferevent_setwatermark(server->buff_event, EV_READ, CS_HEADER_PDU_LEN, 0);
+    server->show_stats = 1;
 }
 
 int
-csperf_server_configure(csperf_server_t*server)
+csperf_server_configure(csperf_server_t *server)
 {
-structsockaddr_insin;
-structevconnlistener*listener;
+    struct sockaddr_in sin;
+    struct evconnlistener *listener;
 
-memset(&sin,0,sizeof(sin));
-sin.sin_family=AF_INET;
-sin.sin_addr.s_addr=htonl(0);
-sin.sin_port=htons(server->config->server_port);
+    memset(&sin, 0, sizeof(sin));
+    sin.sin_family = AF_INET;
+    sin.sin_addr.s_addr = htonl(0);
+    sin.sin_port = htons(server->config->server_port);
 
-listener=evconnlistener_new_bind(server->evbase,
-csperf_server_accept,server,
-LEV_OPT_CLOSE_ON_FREE|LEV_OPT_REUSEABLE,-1,
-(structsockaddr*)&sin,sizeof(sin));
+    listener = evconnlistener_new_bind(server->evbase, 
+        csperf_server_accept, server,
+        LEV_OPT_CLOSE_ON_FREE|LEV_OPT_REUSEABLE, -1,
+        (struct sockaddr*)&sin, sizeof(sin));
 
-if(!listener){
-return-1;
+    if (!listener) {
+        return -1;
+    }
+    evconnlistener_set_error_cb(listener, csperf_accept_error);
+    zlog_info(log_get_cat_csperf(), "Server: Listening on %s:%d\n", 
+            inet_ntoa(sin.sin_addr), server->config->server_port);
+    return 0;
 }
-evconnlistener_set_error_cb(listener,csperf_accept_error);
-zlog_info(log_get_cat_csperf(),"Server:Listeningon%s:%d\n",
-inet_ntoa(sin.sin_addr),server->config->server_port);
-return0;
-}
 
-int
-csperf_server_run(csperf_config_t*config)
+int 
+csperf_server_run(csperf_config_t *config)
 {
-interror=0;
-csperf_server_t*server=NULL;
+    int error = 0;
+    csperf_server_t *server = NULL;
 
-if(!(server=csperf_server_init(config))){
-zlog_warn(log_get_cat_csperf(),"Failedtoinitserver\n");
-return-1;
-}
+    if (!(server = csperf_server_init(config))) {
+        zlog_warn(log_get_cat_csperf(), "Failed to init server\n");
+        return -1;
+    }
 
-if((error=csperf_server_configure(server))){
-zlog_warn(log_get_cat_csperf(),"Failedtoconfigureserver\n");
-csperf_server_shutdown(server);
-returnerror;
-}
+    if ((error = csperf_server_configure(server))) {
+        zlog_warn(log_get_cat_csperf(), "Failed to configure server\n");
+        csperf_server_shutdown(server);
+        return error;
+    }
 
-server->second_timer=evtimer_new(server->evbase,
-csperf_server_timer_cb,server);
-csperf_server_timer_update(server);
+    server->second_timer = evtimer_new(server->evbase, 
+        csperf_server_timer_cb, server);
+    csperf_server_timer_update(server);
 
-/*Runtheeventloop.Listenforconnection*/
-event_base_dispatch(server->evbase);
-return0;
+    /* Run the event loop. Listen for connection */
+    event_base_dispatch(server->evbase);
+    return 0;
 }
