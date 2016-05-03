@@ -8,7 +8,7 @@ target_link_libraries(nixia
         log common http csperf common
         libevent rt m pthread
         libevent libzlog libevent_pthreads libevhtp libhiredis libncurses
-        dl z libcrypto libssl libssh libftp libcrypto libssl)
+        dl z libcrypto libssl libssh2 libftp libcrypto libssl)
 
 # Copy configuration files  
 install(FILES ${LOG_CONFIG} DESTINATION ${CONFIG_DIR}

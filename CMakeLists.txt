@@ -150,23 +150,22 @@ add_dependencies(libssl openssl)
 
 include_directories(${install_dir}/include)
 
-# Build libssh 0.7.3
-ExternalProject_Add(libssh2
+# Build libssh2-1.7.0
+ExternalProject_Add(ssh2
         DEPENDS openssl
-        URL ${PROJECT_SOURCE_DIR}/packages/libssh.tar.gz
-        PREFIX ${CMAKE_BINARY_DIR}/external/libssh2
-        CONFIGURE_COMMAND ""
+        URL ${PROJECT_SOURCE_DIR}/packages/libssh2-1.7.0.tar.gz
+        PREFIX ${CMAKE_BINARY_DIR}/external/ssh2
+        CONFIGURE_COMMAND cd <SOURCE_DIR> && ./configure --prefix=<INSTALL_DIR> 
         UPDATE_COMMAND ""
-        BUILD_COMMAND mkdir -p <SOURCE_DIR>/build && cd <SOURCE_DIR>/build &&
-            cmake -DWITH_STATIC_LIB=ON -DWITH_GSSAPI=OFF -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR> -DCMAKE_BUILD_TYPE=Debug .. && make
-        INSTALL_COMMAND cd <SOURCE_DIR>/build && make install PREFIX=<INSTALL_DIR>
+        BUILD_COMMAND make -C <SOURCE_DIR> 
+        INSTALL_COMMAND make -C <SOURCE_DIR> install 
 )
 
-ExternalProject_Get_Property(libssh2 install_dir)
-add_library(libssh STATIC IMPORTED)
-set_property(TARGET libssh PROPERTY IMPORTED_LOCATION
-        ${install_dir}/lib/libssh.a)
-add_dependencies(libssh libssh2)
+ExternalProject_Get_Property(ssh2 install_dir)
+add_library(libssh2 STATIC IMPORTED)
+set_property(TARGET libssh2 PROPERTY IMPORTED_LOCATION
+        ${install_dir}/lib/libssh2.a)
+add_dependencies(libssh2 ssh2)
 include_directories(${install_dir}/include)
 
 # Build ftplib-4.0-1
