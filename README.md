@@ -1,4 +1,4 @@
-# nixia
+# nixia Sumana
 nixia is traffic geneeration client tool to test servers and network
 It is still work in progress and it is designed to be a Client Framework which will allow us to test multiple protocols.
 Currently, it supports HTTP.
